@@ -1,34 +1,30 @@
 package com.ayush.rateLimiterApp.service;
 
+import com.ayush.rateLimiterApp.RateLimiterStrategy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RateLimiterService {
-  int limit = 5;
-  int timeWindow = 60000; //60 seconds
+    private final List<RateLimiterStrategy> strategies;
 
-  Map<Integer, List<Long>> userDb = new HashMap<>();
+    public RateLimiterService(List<RateLimiterStrategy> strategies) {
+      this.strategies = strategies;
+    }
 
-  public Boolean isAllowed(int userId) {
-    // get current time
-    //get user's previous timestamps
-    //remove the timestamps that are older than 60 seconds.
-    //check whether user has already made 5 requests in last 60 seconds or not.
-    //if yes then don't allow otherwise allow.
-    //if allowed then add that timestamps in the list and userDb.
-    long now = System.currentTimeMillis();
-    userDb.putIfAbsent(userId, new ArrayList<>());
-    List<Long> timestamps = userDb.get(userId);
-    timestamps.removeIf(timestamp -> now - timestamp > timeWindow);
-    if (timestamps.size() < limit){
-      timestamps.add(now);
+    public Boolean isAllowed(int userId) {
+      for(RateLimiterStrategy strategy : strategies) {
+        Boolean allowed = strategy.isAllowed(userId);
+        if (!allowed) {
+          System.out.println("Blocked by: " + strategy.getClass().getSimpleName());
+          return false;
+        }
+      }
       return true;
     }
-    return false;
-  }
   }
