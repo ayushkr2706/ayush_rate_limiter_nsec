@@ -20,9 +20,10 @@ public class RateLimiterController {
 
 
     @PostMapping("/check")
-    public String Check(@RequestParam int userId){
+    public String Check(@RequestParam int userId,
+                        @RequestParam String strategyType){
 
-         boolean allowed = rateLimiterService.isAllowed(userId);
+         boolean allowed = rateLimiterService.isAllowed(userId, strategyType);
          if(allowed) {
              return "Success";
          }

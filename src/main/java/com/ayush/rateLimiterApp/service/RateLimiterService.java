@@ -11,20 +11,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RateLimiterService {
-    private final List<RateLimiterStrategy> strategies;
-
-    public RateLimiterService(List<RateLimiterStrategy> strategies) {
-      this.strategies = strategies;
+//    private final List<RateLimiterStrategy> strategies;
+//
+//    public RateLimiterService(List<RateLimiterStrategy> strategies) {
+//      this.strategies = strategies;
+//    }
+    private final Map<String, RateLimiterStrategy> strategyMap;
+    public RateLimiterService(Map<String, RateLimiterStrategy> strategyMap) {
+        this.strategyMap = strategyMap;
     }
 
-    public Boolean isAllowed(int userId) {
-      for(RateLimiterStrategy strategy : strategies) {
-        Boolean allowed = strategy.isAllowed(userId);
-        if (!allowed) {
-          System.out.println("Blocked by: " + strategy.getClass().getSimpleName());
-          return false;
+
+
+    public Boolean isAllowed(int userId, String strategyType) {
+      RateLimiterStrategy strategy = strategyMap.get(strategyType);
+        if (strategy == null) {
+            throw new IllegalArgumentException("Invalid strategy: " + strategyType);
         }
-      }
-      return true;
+      return strategy.isAllowed(userId);
     }
   }
