@@ -1,15 +1,11 @@
 package com.ayush.rateLimiterApp.controller;
 
-import com.ayush.rateLimiterApp.RateLimiterStrategy;
 import com.ayush.rateLimiterApp.service.RateLimiterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -20,10 +16,9 @@ public class RateLimiterController {
 
 
     @PostMapping("/check")
-    public String Check(@RequestParam int userId,
-                        @RequestParam String strategyType){
+    public String Check(@RequestParam int userId){
 
-         boolean allowed = rateLimiterService.isAllowed(userId, strategyType);
+         boolean allowed = rateLimiterService.isAllowed(userId);
          if(allowed) {
              return "Success";
          }

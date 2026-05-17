@@ -1,6 +1,10 @@
 package com.ayush.rateLimiterApp.service;
 
 import com.ayush.rateLimiterApp.RateLimiterStrategy;
+import com.ayush.rateLimiterApp.config.RateLimitConfig;
+import com.ayush.rateLimiterApp.entity.RateLimitConfigEntity;
+import com.ayush.rateLimiterApp.repository.RateLimitRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,18 +20,56 @@ public class RateLimiterService {
 //    public RateLimiterService(List<RateLimiterStrategy> strategies) {
 //      this.strategies = strategies;
 //    }
+private final RateLimitRepository repository;
+
+
     private final Map<String, RateLimiterStrategy> strategyMap;
-    public RateLimiterService(Map<String, RateLimiterStrategy> strategyMap) {
+    public RateLimiterService(Map<String, RateLimiterStrategy> strategyMap, RateLimitRepository repository) {
         this.strategyMap = strategyMap;
+        this.repository = repository;
     }
 
+   // private final Map<Integer, RateLimitConfig> userConfigMap = new ConcurrentHashMap<>();
 
+//    @PostConstruct
+//    public void init() {
+//        userConfigMap.put(1, new RateLimitConfig("slidingWindowStrategy", 2,10000));
+//        userConfigMap.put(2, new RateLimitConfig("fixedWindowStrategy", 1, 5000));
+//    }
 
-    public Boolean isAllowed(int userId, String strategyType) {
-      RateLimiterStrategy strategy = strategyMap.get(strategyType);
-        if (strategy == null) {
-            throw new IllegalArgumentException("Invalid strategy: " + strategyType);
+    @PostConstruct
+    public void init() {
+        repository.save(new RateLimitConfigEntity(1,"slidingWindowStrategy", 2, 10000));
+        repository.save(new RateLimitConfigEntity(2,"fixedWindowStrategy", 1, 5000));
+    }
+
+    public Boolean isAllowed(int userId) {
+
+//        RateLimitConfig config = userConfigMap.get(userId);
+
+        RateLimitConfigEntity rateLimitConfigEntity =
+                repository.findById(userId).orElse(null);
+
+//        if (config == null) {
+//            config = new RateLimitConfig("slidingWindowStrategy", 2, 10000);
+//
+//        }
+
+        if(rateLimitConfigEntity == null){
+            rateLimitConfigEntity = new RateLimitConfigEntity();
+            rateLimitConfigEntity.setLimit(2);
+            rateLimitConfigEntity.setStrategyType("slidingWindowStrategy");
+            rateLimitConfigEntity.setWindowSize(10000);
         }
-      return strategy.isAllowed(userId);
+
+        RateLimiterStrategy strategy = strategyMap.get(rateLimitConfigEntity.getStrategyType());
+//      return strategy.isAllowed(userId, config);
+
+        if (strategy == null) {
+            throw new IllegalArgumentException("Strategy not found");
+        }
+
+        RateLimitConfig config = new RateLimitConfig(rateLimitConfigEntity.getStrategyType(),  rateLimitConfigEntity.getLimit(), rateLimitConfigEntity.getWindowSize());
+        return strategy.isAllowed(userId, config);
     }
   }
