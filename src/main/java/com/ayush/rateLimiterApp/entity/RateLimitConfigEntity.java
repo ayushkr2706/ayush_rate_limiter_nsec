@@ -2,8 +2,10 @@ package com.ayush.rateLimiterApp.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "rate_limit_config")
 public class RateLimitConfigEntity {
 
     @Id
