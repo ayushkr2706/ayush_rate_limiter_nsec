@@ -16,7 +16,7 @@ public class RateLimitConfig {
     public int getLimit(){
         return requestLimit;
     }
-    public int getWindowSize(){
-        return windowSize;
+    public int getWindowSize()
+    {return windowSize;
     }
 }

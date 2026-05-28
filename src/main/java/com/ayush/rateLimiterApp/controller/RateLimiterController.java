@@ -1,28 +1,43 @@
 package com.ayush.rateLimiterApp.controller;
 
+import com.ayush.rateLimiterApp.entity.RateLimitConfigEntity;
 import com.ayush.rateLimiterApp.service.RateLimiterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api")
 public class RateLimiterController {
 
-    @Autowired
-    private RateLimiterService rateLimiterService;
 
+    private final RateLimiterService rateLimiterService;
 
-    @PostMapping("/check")
-    public String Check(@RequestParam int userId){
+    public RateLimiterController(RateLimiterService rateLimiterService) {
+        this.rateLimiterService = rateLimiterService;
+    }
+
+    @PostMapping("/config")
+    //@PreAuthorize("hasRole('ADMIN')")  // only admins can call this
+    public ResponseEntity<String> addConfig(@RequestBody RateLimitConfigEntity configEntity){
+        rateLimiterService.saveConfig(configEntity);
+        return ResponseEntity.ok("config added");
+    }
+
+    @GetMapping("/config/{userId}")
+    public ResponseEntity<RateLimitConfigEntity>getConfig(@PathVariable int userId){
+        return ResponseEntity.ok(rateLimiterService.getConfig(userId));
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<String> Check(@PathVariable int userId){
 
          boolean allowed = rateLimiterService.isAllowed(userId);
          if(allowed) {
-             return "Success";
+             return ResponseEntity.ok("Success");
          }
-         else return "Rate Limit Exceeded";
+         else return ResponseEntity.status(429).body("Rate Limit Exceeded");
 
     }
 

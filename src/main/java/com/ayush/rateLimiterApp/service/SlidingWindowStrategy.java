@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Component("slidingWindowStrategy")
 public class SlidingWindowStrategy implements RateLimiterStrategy {
 //    private final int limit = 5;
 //    private final int timeWindow = 10000; //10 seconds

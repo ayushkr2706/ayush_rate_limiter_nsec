@@ -30,7 +30,9 @@ public class RateLimitConfigEntity {
         return userId;
     }
 
-    public void setUserId(Integer userId) {}
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
     public String getStrategyType() {
         return strategyType;
     }

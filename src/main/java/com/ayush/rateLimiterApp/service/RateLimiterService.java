@@ -37,10 +37,18 @@ private final RateLimitRepository repository;
 //        userConfigMap.put(2, new RateLimitConfig("fixedWindowStrategy", 1, 5000));
 //    }
 
-    @PostConstruct
-    public void init() {
-        repository.save(new RateLimitConfigEntity(1,"slidingWindowStrategy", 2, 10000));
-        repository.save(new RateLimitConfigEntity(2,"fixedWindowStrategy", 1, 5000));
+//    @PostConstruct
+//    public void init() {
+//        repository.save(new RateLimitConfigEntity(1,"slidingWindowStrategy", 2, 10000));
+//        repository.save(new RateLimitConfigEntity(2,"fixedWindowStrategy", 1, 5000));
+//    }
+
+    public void saveConfig(RateLimitConfigEntity config) {
+        repository.save(config);
+    }
+
+    public RateLimitConfigEntity getConfig(int userId) {
+        return repository.findById(userId).orElse(null);
     }
 
     public Boolean isAllowed(int userId) {
@@ -70,6 +78,10 @@ private final RateLimitRepository repository;
         }
 
         RateLimitConfig config = new RateLimitConfig(rateLimitConfigEntity.getStrategyType(),  rateLimitConfigEntity.getLimit(), rateLimitConfigEntity.getWindowSize());
+        System.out.println("User : "+userId);
+        System.out.println("Strategy : "+ rateLimitConfigEntity.getStrategyType());
+        System.out.println("Window : "+ rateLimitConfigEntity.getWindowSize());
+        System.out.println("Limit : "+rateLimitConfigEntity.getLimit());
         return strategy.isAllowed(userId, config);
     }
   }
