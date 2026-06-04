@@ -5,7 +5,7 @@ import com.ayush.rateLimiterApp.service.RateLimiterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 
 @RestController
 @RequestMapping("/api")
@@ -19,7 +19,6 @@ public class RateLimiterController {
     }
 
     @PostMapping("/config")
-    //@PreAuthorize("hasRole('ADMIN')")  // only admins can call this
     public ResponseEntity<String> addConfig(@RequestBody RateLimitConfigEntity configEntity){
         rateLimiterService.saveConfig(configEntity);
         return ResponseEntity.ok("config added");

@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 public class RateLimitConfigEntity {
 
     @Id
-    private Integer userId;
+    private String userId;
 
     private String strategyType;
     private int requestLimit;
@@ -19,7 +19,7 @@ public class RateLimitConfigEntity {
     public RateLimitConfigEntity() {}
 
     // Custom constructor
-    public RateLimitConfigEntity(Integer userId, String strategyType, int requestLimit, int windowSize) {
+    public RateLimitConfigEntity(String userId, String strategyType, int requestLimit, int windowSize) {
         this.userId = userId;
         this.strategyType = strategyType;
         this.requestLimit = requestLimit;
@@ -28,11 +28,11 @@ public class RateLimitConfigEntity {
 
     // getters & setters
 
-    public Integer getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
     public String getStrategyType() {

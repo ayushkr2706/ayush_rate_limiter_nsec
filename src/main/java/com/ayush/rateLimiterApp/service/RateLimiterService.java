@@ -5,6 +5,7 @@ import com.ayush.rateLimiterApp.config.RateLimitConfig;
 import com.ayush.rateLimiterApp.entity.RateLimitConfigEntity;
 import com.ayush.rateLimiterApp.repository.RateLimitRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ private final RateLimitRepository repository;
         this.repository = repository;
     }
 
+    @Autowired
+    private RateLimiterFactory rateLimiterFactory;
    // private final Map<Integer, RateLimitConfig> userConfigMap = new ConcurrentHashMap<>();
 
 //    @PostConstruct
@@ -47,7 +50,7 @@ private final RateLimitRepository repository;
         repository.save(config);
     }
 
-    public RateLimitConfigEntity getConfig(int userId) {
+    public RateLimitConfigEntity getConfig(String userId) {
         return repository.findById(userId).orElse(null);
     }
 
