@@ -30,8 +30,6 @@ private final RateLimitRepository repository;
         this.repository = repository;
     }
 
-    @Autowired
-    private RateLimiterFactory rateLimiterFactory;
    // private final Map<Integer, RateLimitConfig> userConfigMap = new ConcurrentHashMap<>();
 
 //    @PostConstruct
@@ -54,7 +52,7 @@ private final RateLimitRepository repository;
         return repository.findById(userId).orElse(null);
     }
 
-    public Boolean isAllowed(int userId) {
+    public Boolean isAllowed(String userId) {
 
 //        RateLimitConfig config = userConfigMap.get(userId);
 

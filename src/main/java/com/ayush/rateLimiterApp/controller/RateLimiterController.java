@@ -2,7 +2,6 @@ package com.ayush.rateLimiterApp.controller;
 
 import com.ayush.rateLimiterApp.entity.RateLimitConfigEntity;
 import com.ayush.rateLimiterApp.service.RateLimiterService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +24,12 @@ public class RateLimiterController {
     }
 
     @GetMapping("/config/{userId}")
-    public ResponseEntity<RateLimitConfigEntity>getConfig(@PathVariable int userId){
+    public ResponseEntity<RateLimitConfigEntity>getConfig(@PathVariable String userId){
         return ResponseEntity.ok(rateLimiterService.getConfig(userId));
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<String> Check(@PathVariable int userId){
+    public ResponseEntity<String> Check(@PathVariable String userId){
 
          boolean allowed = rateLimiterService.isAllowed(userId);
          if(allowed) {
