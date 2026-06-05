@@ -7,11 +7,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component("slidingWindowStrategy")
 public class SlidingWindowStrategy implements RateLimiterStrategy{
@@ -33,15 +28,15 @@ public class SlidingWindowStrategy implements RateLimiterStrategy{
         //if allowed then add that timestamps in the list and userDb.
 
        int limit = config.getLimit();
-       int timeWindow = config.getWindowSize();
+       long timeWindow = config.getWindowSize();
         long now = System.currentTimeMillis();
 
-        String key = "sw:"+ userId;
+        String key = "rate_limit:sliding_window:" + userId;
        // userDb.putIfAbsent(userId, new ArrayList<>());
         //List<Long> timestamps = userDb.get(userId);
 
-        redisTemplate.opsForZSet().removeRangeByScore(key, 0, now - timeWindow*1000);
-
+        redisTemplate.opsForZSet()
+                .removeRangeByScore(key, 0, now - timeWindow);
         Long count = redisTemplate.opsForZSet().zCard(key);
 
      //   List<Long> timestamps = userDb.computeIfAbsent(userId, k -> new ArrayList<>());
@@ -56,14 +51,17 @@ public class SlidingWindowStrategy implements RateLimiterStrategy{
 //            }
 //        }
 //        return false;
+        // check limit
         if (count != null && count >= limit) {
             return false;
         }
 
+// add new request
         redisTemplate.opsForZSet()
                 .add(key, String.valueOf(now), now);
 
-        redisTemplate.expire(key, Duration.ofSeconds(config.getWindowSize()));
+
+        redisTemplate.expire(key, Duration.ofMillis(config.getWindowSize()));
         return true;
     }
 }

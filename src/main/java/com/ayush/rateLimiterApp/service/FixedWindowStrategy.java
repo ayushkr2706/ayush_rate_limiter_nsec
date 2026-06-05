@@ -29,7 +29,7 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
         int limit = config.getLimit();
         int timeWindow = config.getWindowSize();
 
-        String key = "fw:" + userId;
+        String key = "rate_limit:fixed_window:" + userId;
 
         //to avoid null pointer exception
       //  windowStarts.putIfAbsent(userId, currentTime);
@@ -61,3 +61,4 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
         return count <= limit;
     }
 }
+
