@@ -74,9 +74,9 @@ private final RateLimitRepository repository;
         RateLimiterStrategy strategy = strategyMap.get(rateLimitConfigEntity.getStrategyType());
 //      return strategy.isAllowed(userId, config);
 
-        if (strategy == null) {
-            throw new IllegalArgumentException("Strategy not found");
-        }
+//        if (strategy == null) {
+//            throw new IllegalArgumentException("Strategy not found");
+//        }
 
         RateLimitConfig config = new RateLimitConfig(rateLimitConfigEntity.getStrategyType(),  rateLimitConfigEntity.getLimit(), rateLimitConfigEntity.getWindowSize());
         System.out.println("User : "+userId);
