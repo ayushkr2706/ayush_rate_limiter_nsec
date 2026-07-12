@@ -4,85 +4,57 @@ import com.ayush.rateLimiterApp.RateLimiterStrategy;
 import com.ayush.rateLimiterApp.config.RateLimitConfig;
 import com.ayush.rateLimiterApp.entity.RateLimitConfigEntity;
 import com.ayush.rateLimiterApp.repository.RateLimitRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-@Service
+@Service // mark this as service class.
 public class RateLimiterService {
-//    private final List<RateLimiterStrategy> strategies;
-//
-//    public RateLimiterService(List<RateLimiterStrategy> strategies) {
-//      this.strategies = strategies;
-//    }
-private final RateLimitRepository repository;
 
-
+    private final RateLimitRepository repository;
     private final Map<String, RateLimiterStrategy> strategyMap;
-    public RateLimiterService(Map<String, RateLimiterStrategy> strategyMap, RateLimitRepository repository) {
-        this.strategyMap = strategyMap;
+
+    public RateLimiterService(RateLimitRepository repository, Map<String, RateLimiterStrategy> strategyMap) {
         this.repository = repository;
+        this.strategyMap = strategyMap;
     }
 
-   // private final Map<Integer, RateLimitConfig> userConfigMap = new ConcurrentHashMap<>();
-
-//    @PostConstruct
-//    public void init() {
-//        userConfigMap.put(1, new RateLimitConfig("slidingWindowStrategy", 2,10000));
-//        userConfigMap.put(2, new RateLimitConfig("fixedWindowStrategy", 1, 5000));
-//    }
-
-//    @PostConstruct
-//    public void init() {
-//        repository.save(new RateLimitConfigEntity(1,"slidingWindowStrategy", 2, 10000));
-//        repository.save(new RateLimitConfigEntity(2,"fixedWindowStrategy", 1, 5000));
-//    }
-
-    public void saveConfig(RateLimitConfigEntity config) {
-        repository.save(config);
+    public void saveConfig(RateLimitConfigEntity entity) {
+        repository.save(entity);
     }
 
     public RateLimitConfigEntity getConfig(String userId) {
         return repository.findById(userId).orElse(null);
     }
 
-    public Boolean isAllowed(String userId) {
+    public boolean isAllowed(String userId) {
 
-//        RateLimitConfig config = userConfigMap.get(userId);
+        RateLimitConfigEntity entity = repository.findById(userId).orElse(null);
 
-        RateLimitConfigEntity rateLimitConfigEntity =
-                repository.findById(userId).orElse(null);
+        if (entity == null) { // (if no user exist)
 
-//        if (config == null) {
-//            config = new RateLimitConfig("slidingWindowStrategy", 2, 10000);
-//
-//        }
+            entity = new RateLimitConfigEntity();
+            entity.setUserId(userId);
+            entity.setStrategyType("FixedWindowStrategy");
+            entity.setUserType("Free");
+            entity.setLimit(3);
+            entity.setWindowSize(5);
 
-        if(rateLimitConfigEntity == null){
-            rateLimitConfigEntity = new RateLimitConfigEntity();
-            rateLimitConfigEntity.setLimit(2);
-            rateLimitConfigEntity.setStrategyType("slidingWindowStrategy");
-            rateLimitConfigEntity.setWindowSize(10000);
         }
 
-        RateLimiterStrategy strategy = strategyMap.get(rateLimitConfigEntity.getStrategyType());
-//      return strategy.isAllowed(userId, config);
+        RateLimiterStrategy strategy = strategyMap.get(entity.getStrategyType());
 
-//        if (strategy == null) {
-//            throw new IllegalArgumentException("Strategy not found");
-//        }
+        RateLimitConfig config = new RateLimitConfig(entity.getStrategyType(), entity.getUserType(), entity.getLimit(),
+                entity.getWindowSize());
 
-        RateLimitConfig config = new RateLimitConfig(rateLimitConfigEntity.getStrategyType(),  rateLimitConfigEntity.getLimit(), rateLimitConfigEntity.getWindowSize());
-        System.out.println("User : "+userId);
-        System.out.println("Strategy : "+ rateLimitConfigEntity.getStrategyType());
-        System.out.println("Window : "+ rateLimitConfigEntity.getWindowSize());
-        System.out.println("Limit : "+rateLimitConfigEntity.getLimit());
+        System.out.println("userId : " + userId);
+        System.out.println("strategyType : " + entity.getStrategyType());
+        System.out.println("userType : " + entity.getUserType());
+        System.out.println("limit : " + entity.getLimit());
+        System.out.println("windiowSize : " + entity.getWindowSize());
+        System.out.println();
+
         return strategy.isAllowed(userId, config);
     }
-  }
+}
