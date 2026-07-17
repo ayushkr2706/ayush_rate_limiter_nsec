@@ -6,6 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.ayush.rateLimiterApp.RateLimiterStrategy;
 import com.ayush.rateLimiterApp.config.RateLimitConfig;
 
+import org.springframework.stereotype.Component;
+
+@Component("FixedWindowStrategy")
 public class FixedWindowStrategy implements RateLimiterStrategy {
 
     private Map<String, Long> timeMap = new ConcurrentHashMap<>();
