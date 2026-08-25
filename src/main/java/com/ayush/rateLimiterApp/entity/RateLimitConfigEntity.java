@@ -12,16 +12,20 @@ public class RateLimitConfigEntity {
     private String userId;
 
     private String strategyType;
+    private String userType;
     private int requestLimit;
     private int windowSize;
 
     // Default constructor (REQUIRED by JPA)
-    public RateLimitConfigEntity() {}
+    public RateLimitConfigEntity() {
+    }
 
     // Custom constructor
-    public RateLimitConfigEntity(String userId, String strategyType, int requestLimit, int windowSize) {
+    public RateLimitConfigEntity(String userId, String strategyType, String userType, int requestLimit,
+            int windowSize) {
         this.userId = userId;
         this.strategyType = strategyType;
+        this.userType = userType;
         this.requestLimit = requestLimit;
         this.windowSize = windowSize;
     }
@@ -35,6 +39,7 @@ public class RateLimitConfigEntity {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
     public String getStrategyType() {
         return strategyType;
     }
@@ -43,15 +48,26 @@ public class RateLimitConfigEntity {
         this.strategyType = strategyType;
     }
 
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
     public int getLimit() {
         return requestLimit;
     }
+
     public void setLimit(int requestLimit) {
         this.requestLimit = requestLimit;
     }
+
     public int getWindowSize() {
         return windowSize;
     }
+
     public void setWindowSize(int windowSize) {
         this.windowSize = windowSize;
     }

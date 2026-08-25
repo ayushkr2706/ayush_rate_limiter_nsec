@@ -37,6 +37,7 @@ public class RateLimiterService {
             entity = new RateLimitConfigEntity();
             entity.setUserId(userId);
             entity.setStrategyType("FixedWindowStrategy");
+            entity.setUserType("Free");
             entity.setLimit(3);
             entity.setWindowSize(5);
 
@@ -44,11 +45,12 @@ public class RateLimiterService {
 
         RateLimiterStrategy strategy = strategyMap.get(entity.getStrategyType());
 
-        RateLimitConfig config = new RateLimitConfig(entity.getStrategyType(), entity.getLimit(),
+        RateLimitConfig config = new RateLimitConfig(entity.getStrategyType(), entity.getUserType(), entity.getLimit(),
                 entity.getWindowSize());
 
         System.out.println("userId : " + userId);
         System.out.println("strategyType : " + entity.getStrategyType());
+        System.out.println("userType : " + entity.getUserType());
         System.out.println("limit : " + entity.getLimit());
         System.out.println("windiowSize : " + entity.getWindowSize());
         System.out.println();
