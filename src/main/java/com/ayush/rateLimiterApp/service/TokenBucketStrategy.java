@@ -35,13 +35,23 @@ public class TokenBucketStrategy {
 
         long now = Instant.now().getEpochSecond();
 
+        /**
+         * Executes the Token Bucket Lua script atomically in Redis.
+         *
+         * The Redis key identifies the user's token bucket, while the remaining
+         * arguments provide the bucket capacity, refill rate, current timestamp,
+         * and number of tokens to consume for the current request.
+         *
+         * return the result returned by the Lua script, indicating whether
+         *         the request is allowed
+         */
         Long result = redisTemplate.execute(
-                script,
-                Collections.singletonList(key),
-                String.valueOf(capacity),
-                String.valueOf(refillRate),
-                String.valueOf(now),
-                "1"
+                script,                          //Lua script executed atomically
+                Collections.singletonList(key),    //Redis key for this user's bucket
+                String.valueOf(capacity),   //Maximum bucket capacity
+                String.valueOf(refillRate),         //Tokens added per unit time
+                String.valueOf(now),                //Current timestamp
+                "1"                                 //Tokens to consume per request
         );
 
         return result != null && result == 1L;
