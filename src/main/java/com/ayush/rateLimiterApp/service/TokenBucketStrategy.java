@@ -5,6 +5,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Collections;
+
 @Service
 public class TokenBucketStrategy {
 
@@ -30,6 +33,18 @@ public class TokenBucketStrategy {
 
         String key = "rateLimit:" + identity;
 
+        long now = Instant.now().getEpochSecond();
+
+        Long result = redisTemplate.execute(
+                script,
+                Collections.singletonList(key),
+                String.valueOf(capacity),
+                String.valueOf(refillRate),
+                String.valueOf(now),
+                "1"
+        );
+
+        return result != null && result == 1L;
 
     }
 }
