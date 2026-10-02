@@ -1,0 +1,57 @@
+package com.ayush.rateLimiterApp.rateLimiter;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Collections;
+
+@Component
+public class TokenBucketRateLimiter {
+
+    private final StringRedisTemplate redisTemplate;      //Through this we'll communicate with Redis.
+
+    private final RedisScript<Long> script;     //It is the Lua script representation. It expects the
+                                                // lua script to return a Long value.
+
+    public TokenBucketRateLimiter(StringRedisTemplate redisTemplate){
+
+        this.redisTemplate = redisTemplate;
+
+        this.script = RedisScript.of(new ClassPathResource("scripts/tokenBucket.lua")
+                                        , Long.class);    //Load your Lua script from the application's resources
+                                                        // and tell Spring what type of value the script will return
+
+    }
+
+    public boolean isAllowed(String identity, int capacity, double refillRate){
+
+        String redisKey = "rateLimit:" + identity;
+
+        long now = Instant.now().toEpochMilli();
+
+        /**
+         * Executes the Token Bucket Lua script atomically in Redis.
+         *
+         * The Redis key identifies the user's token bucket, while the remaining
+         * arguments provide the bucket capacity, refill rate, current timestamp,
+         * and number of tokens to consume for the current request.
+         *
+         * return the result returned by the Lua script, indicating whether
+         *         the request is allowed
+         */
+        Long result = redisTemplate.execute(
+                script,                                 //Lua script executed atomically
+                Collections.singletonList(redisKey),    //Identifies a particular user's bucket inside the redis
+                String.valueOf(capacity),        //Total number of tokens the bucket can have
+                String.valueOf(refillRate),             //The rate at which token will be refilled per unit time
+                String.valueOf(now),                    //current timestamp
+                1                                       //Number of tokens to be consumed per request
+        );
+
+        return result != null && result == 1L;
+    }
+
+}

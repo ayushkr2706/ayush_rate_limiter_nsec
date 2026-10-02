@@ -18,7 +18,8 @@ end
 --elapsed means how much time passed since the last request was made.
 local elapsed = math.max(0, now - lastRefill)
 
-tokens = math.min(capacity, tokens + (elapsed * refillRate))
+--Refilling of tokens
+tokens = math.min(capacity, tokens + (elapsed/1000.0) * refillRate)     --We dvide by 1000 to convert ms to sec.
 
 local allowed = 0
 if tokens >= requested then
