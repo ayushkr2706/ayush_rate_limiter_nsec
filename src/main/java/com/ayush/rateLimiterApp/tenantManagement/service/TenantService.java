@@ -2,6 +2,8 @@ package com.ayush.rateLimiterApp.tenantManagement.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
+import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
+import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
@@ -19,9 +21,14 @@ public class TenantService {
 
     private ApiRepository apiRepository;
 
-    public TenantService(TenantRepository tenantRepository, ApiRepository apiRepository){
+    private PolicyRepository policyRepository;
+
+    public TenantService(TenantRepository tenantRepository,
+                         ApiRepository apiRepository,
+                         PolicyRepository policyRepository){
         this.tenantRepository = tenantRepository;
         this.apiRepository = apiRepository;
+        this.policyRepository = policyRepository;
     }
 
     public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto){
@@ -36,7 +43,18 @@ public class TenantService {
 
         Tenants tenant = mapToTenantsEntity(registrationRequestDto);
         Tenants savedTenant = tenantRepository.save(tenant);
+        System.out.println("Tenant Registered");
+
+        Policies policyRequest = registrationRequestDto.getPolicy();
+        Policies policyToBeSaved = new Policies();
+        policyToBeSaved.setTenant(savedTenant);
+        policyToBeSaved.setCapacity(policyRequest.getCapacity());
+        policyToBeSaved.setRefillRate(policyRequest.getRefillRate());
+        policyRepository.save(policyToBeSaved);
+        System.out.println("Policy Registered");
+
         ApiCredentials apiCredential = apiRepository.save(mapToApiCredentialEntity(savedTenant));
+        System.out.println("Api credentials registered");
         RegistrationResponseDto response =  mapToRegistrationResponseDto(tenant);
         response.setCreatedAt(LocalDateTime.now());
         response.setApiKey(apiCredential.getApiKey());

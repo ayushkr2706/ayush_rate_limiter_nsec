@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.tenantManagement.entity;
 
+import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +16,6 @@ public class Tenants {
 
     @Column(unique = true)
     private String companyEmail;
-
     private String password;
     private LocalDateTime createdAt;
     private String status;
