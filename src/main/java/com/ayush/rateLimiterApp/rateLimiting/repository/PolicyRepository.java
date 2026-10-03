@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface PolicyRepository extends JpaRepository<Policies, UUID> {
 
-    Optional<Policies> findByIdAndTenantId(UUID policyId, UUID tenantId);
+    Optional<Policies> findByPolicyIdAndTenant_TenantId(UUID policyId, UUID tenantId);
 }

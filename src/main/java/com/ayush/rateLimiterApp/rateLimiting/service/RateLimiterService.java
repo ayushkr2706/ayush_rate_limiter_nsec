@@ -3,6 +3,7 @@ package com.ayush.rateLimiterApp.rateLimiting.service;
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.exception.ApiKeyNotFoundException;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
+import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
@@ -23,12 +24,15 @@ public class RateLimiterService {
     private ApiRepository apiRepository;
 
     public RateLimiterService(TokenBucketRateLimiter tokenBucketRateLimiter,
-                              ApiRepository apiRepository){
+                              ApiRepository apiRepository,
+                              PolicyRepository policyRepository){
         this.tokenBucketRateLimiter = tokenBucketRateLimiter;
         this.apiRepository = apiRepository;
+        this.policyRepository = policyRepository;
     }
 
-    public RateLimiterResponseDto rateLimit(RateLimiterRequestDto rateLimiterRequestDto, String authorization){
+    public RateLimiterResponseDto rateLimit(RateLimiterRequestDto rateLimiterRequestDto,
+                                            String authorization){
 
         UUID apiKey = UUID.fromString(authorization);
         ApiCredentials fetchedApiCredentials = apiRepository.findById(apiKey)
@@ -39,20 +43,36 @@ public class RateLimiterService {
         if(!tenantTobeChecked.getStatus().equals("active")){
             throw new TenantInactiveException("Tenant is not active");
         }
+
         UUID tenantId = tenantTobeChecked.getTenantId();
         UUID policyId = UUID.fromString(rateLimiterRequestDto.getPolicyId());
-        Policies fetchedPolicy = policyRepository.findByIdAndTenantId(policyId, tenantId)
+        Policies fetchedPolicy = policyRepository.findByPolicyIdAndTenant_TenantId(policyId, tenantId)
                 .orElseThrow(() -> new PolicyNotFoundException("Tenant is not registered"));
 
-        String identity = rateLimiterRequestDto.getUserIp();
+        String userIp = rateLimiterRequestDto.getUserIp();
         int capacity = fetchedPolicy.getCapacity();
         double refillRate = fetchedPolicy.getRefillRate();
 
-        boolean isAllowed = tokenBucketRateLimiter.isAllowed(identity, capacity, refillRate);
+        String identity = tenantId.toString() + ":" + policyId.toString() + ":" + userIp;
 
-        if(isAllowed){
+        RateLimitResult result = tokenBucketRateLimiter.isAllowed(identity, capacity, refillRate);
 
+        RateLimiterResponseDto response = new RateLimiterResponseDto();
+
+        response.setLimit(capacity);
+        response.setAllowed(result.getAllowed());
+        response.setRetryAfter(result.getRetryAfter());
+        response.setPolicyId(policyId);
+        response.setRemainingTokens(result.getTokens());
+
+        if(result.getAllowed()){
+          response.setMessage("Allowed");
         }
+        else{
+            response.setMessage("Rate Limit Exceeded");
+        }
+
+        return response;
     }
 
 }

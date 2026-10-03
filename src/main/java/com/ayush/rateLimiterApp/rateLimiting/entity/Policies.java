@@ -48,4 +48,5 @@ public class Policies {
     public void setRefillRate(double refillRate) {
         this.refillRate = refillRate;
     }
+
 }
