@@ -1,5 +1,6 @@
-package com.ayush.rateLimiterApp.entity;
+package com.ayush.rateLimiterApp.rateLimiting.entity;
 
+import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import jakarta.persistence.*;
 
 import java.util.UUID;

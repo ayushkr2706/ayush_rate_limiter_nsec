@@ -1,27 +1,30 @@
-package com.ayush.rateLimiterApp.entity;
+package com.ayush.rateLimiterApp.tenantManagement.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 public class Tenants {
 
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
-    private String tenantId;
+    private UUID tenantId;
     private String companyName;
+
+    @Column(unique = true)
+    private String companyEmail;
+
+    private String password;
     private LocalDateTime createdAt;
     private String status;
 
-    public String getTenantId() {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(String tenantId) {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
@@ -47,5 +50,21 @@ public class Tenants {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCompanyEmail() {
+        return companyEmail;
+    }
+
+    public void setCompanyEmail(String companyEmail) {
+        this.companyEmail = companyEmail;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

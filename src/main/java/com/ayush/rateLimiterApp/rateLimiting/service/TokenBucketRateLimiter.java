@@ -1,4 +1,4 @@
-package com.ayush.rateLimiterApp.rateLimiter;
+package com.ayush.rateLimiterApp.rateLimiting.service;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;

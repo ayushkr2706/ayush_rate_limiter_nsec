@@ -1,0 +1,17 @@
+package com.ayush.rateLimiterApp.globalException;
+
+import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DuplicateTenantException.class)
+    public ResponseEntity<String> handleDuplicateTenantException(DuplicateTenantException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+}
