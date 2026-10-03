@@ -1,5 +1,8 @@
 package com.ayush.rateLimiterApp.globalException;
 
+import com.ayush.rateLimiterApp.apiCredentialManagement.exception.ApiKeyNotFoundException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.PolicyNotFoundException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.TenantInactiveException;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateTenantException.class)
     public ResponseEntity<String> handleDuplicateTenantException(DuplicateTenantException ex){
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ApiKeyNotFoundException.class)
+    public ResponseEntity<String> handleApiKeyNotFoundException(ApiKeyNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(PolicyNotFoundException.class)
+    public ResponseEntity<String> handlePolicyNotFoundException(PolicyNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(TenantInactiveException.class)
+    public ResponseEntity<String> handleTenantInactiveException(TenantInactiveException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
 }

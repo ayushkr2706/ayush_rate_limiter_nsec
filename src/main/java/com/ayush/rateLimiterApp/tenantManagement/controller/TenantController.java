@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/register")
 public class TenantController {
 
+    //The Tenant Controller is responsible only for the registration of the tenant
+    //and the policy should also be provided by the tenant during registration.
+
     private TenantService tenantService;
 
     public TenantController(TenantService tenantService){

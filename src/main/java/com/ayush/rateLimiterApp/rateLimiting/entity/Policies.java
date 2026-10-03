@@ -10,7 +10,7 @@ public class Policies {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID policyId;
     @ManyToOne
     @JoinColumn(name = "tenantId")
     private Tenants tenant;
@@ -18,11 +18,11 @@ public class Policies {
     private double refillRate;
 
     public UUID getId() {
-        return id;
+        return policyId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setId(UUID policyId) {
+        this.policyId = policyId;
     }
 
     public Tenants getTenant() {

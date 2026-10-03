@@ -8,6 +8,15 @@ public class RegistrationResponseDto {
     private UUID apiKey;
     private String status;
     private LocalDateTime createdAt;
+    private UUID policyId;
+
+    public UUID getPolicyId() {
+        return policyId;
+    }
+
+    public void setPolicyId(UUID policyId) {
+        this.policyId = policyId;
+    }
 
     public UUID getApiKey() {
         return apiKey;

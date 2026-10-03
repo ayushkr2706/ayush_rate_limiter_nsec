@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.tenantManagement.dto;
 
+import com.ayush.rateLimiterApp.rateLimiting.dto.PolicyRegistrationDto;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 
 public class RegistrationRequestDto {
@@ -7,13 +8,13 @@ public class RegistrationRequestDto {
     private String companyName;
     private String companyEmail;
     private String password;
-    private Policies policy;
+    private PolicyRegistrationDto policy;
 
-    public Policies getPolicy() {
+    public PolicyRegistrationDto getPolicy() {
         return policy;
     }
 
-    public void setPolicy(Policies policy) {
+    public void setPolicy(PolicyRegistrationDto policy) {
         this.policy = policy;
     }
 
