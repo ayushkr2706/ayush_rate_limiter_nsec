@@ -9,7 +9,7 @@ public class RateLimiterResponseDto {
     private String message;
     private int limit;
     private int remainingTokens;
-    private UUID policyId;
+    private String policyId;
 
     public int getLimit() {
         return limit;
@@ -27,11 +27,11 @@ public class RateLimiterResponseDto {
         this.remainingTokens = remainingTokens;
     }
 
-    public UUID getPolicyId() {
+    public String getPolicyId() {
         return policyId;
     }
 
-    public void setPolicyId(UUID policyId) {
+    public void setPolicyId(String policyId) {
         this.policyId = policyId;
     }
 

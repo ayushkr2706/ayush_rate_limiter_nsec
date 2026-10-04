@@ -2,8 +2,6 @@ package com.ayush.rateLimiterApp.tenantManagement.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
-import com.ayush.rateLimiterApp.rateLimiting.dto.PolicyRegistrationDto;
-import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
@@ -46,20 +44,11 @@ public class TenantService {
         Tenants savedTenant = tenantRepository.save(tenant);
         System.out.println("Tenant Registered");
 
-        PolicyRegistrationDto policyRequest = registrationRequestDto.getPolicy();
-        Policies policyToBeSaved = new Policies();
-        policyToBeSaved.setTenant(savedTenant);
-        policyToBeSaved.setCapacity(policyRequest.getCapacity());
-        policyToBeSaved.setRefillRate(policyRequest.getRefillRate());
-        Policies savedPolicy = policyRepository.save(policyToBeSaved);
-        System.out.println("Policy Registered");
-
         ApiCredentials savedApiCredential = apiRepository.save(mapToApiCredentialEntity(savedTenant));
         System.out.println("Api credentials registered");
         RegistrationResponseDto response =  mapToRegistrationResponseDto(tenant);
         response.setCreatedAt(LocalDateTime.now());
-        response.setApiKey(savedApiCredential.getApiKey());
-        response.setPolicyId(savedPolicy.getId());
+        response.setApiKey(savedApiCredential.getApiKey().toString());
         return response;
     }
 

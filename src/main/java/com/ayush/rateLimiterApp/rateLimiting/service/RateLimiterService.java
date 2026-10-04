@@ -1,13 +1,13 @@
 package com.ayush.rateLimiterApp.rateLimiting.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
-import com.ayush.rateLimiterApp.apiCredentialManagement.exception.ApiKeyNotFoundException;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import com.ayush.rateLimiterApp.rateLimiting.exception.PolicyNotFoundException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotFoundException;
 import com.ayush.rateLimiterApp.rateLimiting.exception.TenantInactiveException;
 import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
@@ -36,7 +36,7 @@ public class RateLimiterService {
 
         UUID apiKey = UUID.fromString(authorization);
         ApiCredentials fetchedApiCredentials = apiRepository.findById(apiKey)
-                .orElseThrow(() -> new ApiKeyNotFoundException("Tenant is not registered"));
+                .orElseThrow(() -> new TenantNotFoundException("Tenant is not registered"));
 
         Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
 
@@ -47,7 +47,8 @@ public class RateLimiterService {
         UUID tenantId = tenantTobeChecked.getTenantId();
         UUID policyId = UUID.fromString(rateLimiterRequestDto.getPolicyId());
         Policies fetchedPolicy = policyRepository.findByPolicyIdAndTenant_TenantId(policyId, tenantId)
-                .orElseThrow(() -> new PolicyNotFoundException("Tenant is not registered"));
+                .orElseThrow(() -> new PolicyNotFoundException("Tenant with policy id " + policyId.toString() +
+                        " does not exist"));
 
         String userIp = rateLimiterRequestDto.getUserIp();
         int capacity = fetchedPolicy.getCapacity();
@@ -62,7 +63,7 @@ public class RateLimiterService {
         response.setLimit(capacity);
         response.setAllowed(result.getAllowed());
         response.setRetryAfter(result.getRetryAfter());
-        response.setPolicyId(policyId);
+        response.setPolicyId(policyId.toString());
         response.setRemainingTokens(result.getTokens());
 
         if(result.getAllowed()){

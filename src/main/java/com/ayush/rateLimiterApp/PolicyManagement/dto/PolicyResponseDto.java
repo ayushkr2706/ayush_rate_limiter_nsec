@@ -1,9 +1,20 @@
-package com.ayush.rateLimiterApp.rateLimiting.dto;
+package com.ayush.rateLimiterApp.PolicyManagement.dto;
 
-public class PolicyRegistrationDto {
+import java.util.UUID;
 
+public class PolicyResponseDto {
+
+    private String policyId;
     private int capacity;
     private double refillRate;
+
+    public String getPolicyId() {
+        return policyId;
+    }
+
+    public void setPolicyId(String policyId) {
+        this.policyId = policyId;
+    }
 
     public int getCapacity() {
         return capacity;

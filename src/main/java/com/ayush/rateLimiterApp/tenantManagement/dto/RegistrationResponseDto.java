@@ -5,24 +5,16 @@ import java.util.UUID;
 
 public class RegistrationResponseDto {
 
-    private UUID apiKey;
+    private String apiKey;
     private String status;
     private LocalDateTime createdAt;
-    private UUID policyId;
 
-    public UUID getPolicyId() {
-        return policyId;
-    }
 
-    public void setPolicyId(UUID policyId) {
-        this.policyId = policyId;
-    }
-
-    public UUID getApiKey() {
+    public String getApiKey() {
         return apiKey;
     }
 
-    public void setApiKey(UUID apiKey) {
+    public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
 
