@@ -1,7 +1,5 @@
 package com.ayush.rateLimiterApp.rateLimiting.dto;
 
-import java.util.UUID;
-
 public class RateLimiterRequestDto {
 
     private String userIp;
