@@ -30,7 +30,11 @@ local actualTokensAdded = math.min(availableSpace, wholeTokens)
 --Refilling of tokens
 tokens = math.min(capacity, tokens + actualTokensAdded)
 
-if  actualTokensAdded > 0 then
+ if tokens >= capacity then
+    --Bucket is full, throw away any leftover time
+    --because if the bucket is full then previous time should not be carried further.
+    lastRefill = now
+elseif  actualTokensAdded > 0 then
     local usedTime = (actualTokensAdded/refillRate) * 1000  --in milliseconds
     lastRefill = lastRefill + usedTime
 end
