@@ -53,7 +53,7 @@ else
     --time needed to make the missing tokens
     local secondsNeeded = (requested - tokens)/refillRate
     --time that has already passed since lastRefill
-    local secondsAlreadyPass = math.max(0, now - lastRefill)/100
+    local secondsAlreadyPass = math.max(0, now - lastRefill)/1000
     --Round up to a whole second and never return less than 1
     retryAfter = math.max(1, math.ceil(secondsNeeded - secondsAlreadyPass))
 end
