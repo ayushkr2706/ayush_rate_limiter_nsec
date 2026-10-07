@@ -52,7 +52,6 @@ public class TokenBucketRateLimiter {
                 Collections.singletonList(redisKey),    //Identifies a particular user's bucket inside the redis
                 String.valueOf(capacity),        //Total number of tokens the bucket can have
                 String.valueOf(refillRate),             //The rate at which token will be refilled per unit time
-                String.valueOf(now),                    //current timestamp
                 String.valueOf(1)                                      //Number of tokens to be consumed per request
         );
 
