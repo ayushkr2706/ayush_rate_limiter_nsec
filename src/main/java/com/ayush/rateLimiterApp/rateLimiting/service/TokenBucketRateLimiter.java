@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,8 +31,6 @@ public class TokenBucketRateLimiter {
 
         String redisKey = "rateLimit:" + identity;
 
-        long now = Instant.now().toEpochMilli();
-
         /**
          * Executes the Token Bucket Lua script atomically in Redis.
          *
@@ -50,17 +47,20 @@ public class TokenBucketRateLimiter {
         List result = redisTemplate.execute(
                 script,                                 //Lua script executed atomically
                 Collections.singletonList(redisKey),    //Identifies a particular user's bucket inside the redis
-                String.valueOf(capacity),        //Total number of tokens the bucket can have
+                String.valueOf(capacity),               //Total number of tokens the bucket can have
                 String.valueOf(refillRate),             //The rate at which token will be refilled per unit time
-                String.valueOf(1)                                      //Number of tokens to be consumed per request
+                String.valueOf(1)                    //Number of tokens to be consumed per request
         );
 
-
+        if(result == null || result.size()<3){
+            throw new IllegalStateException(
+                    "Unexpected response from the rate limit script");
+        }
 
         boolean allowed = false;
-        Long allowedValue = (Long) result.get(0);
+        Number allowedValue = (Number) result.get(0);
 
-        if (allowedValue == 1L) {
+        if (allowedValue.longValue() == 1L) {
             allowed = true;
         } else {
             allowed = false;
