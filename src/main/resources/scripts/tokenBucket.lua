@@ -48,7 +48,12 @@ end
 if allowed == 1 then
     retryAfter = 0
 else
-    retryAfter = (requested - tokens)/refillRate        --in seconds
+    --time needed to make the missing tokens
+    local secondsNeeded = (requested - tokens)/refillRate
+    --time that has already passed since lastRefill
+    local secondsAlreadyPass = math.max(0, now - lastRefill)/100
+    --Round up to a whole second and never return less than 1
+    retryAfter = math.max(1, math.ceil(secondsNeeded - secondsAlreadyPass))
 end
 
 redis.call("HMSET", key, "tokens", tokens, "lastRefill", lastRefill)
