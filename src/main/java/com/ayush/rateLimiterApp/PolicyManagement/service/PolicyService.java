@@ -31,7 +31,7 @@ public class PolicyService {
         UUID apiKey = UUID.fromString(authorization);
 
         ApiCredentials apiCredential = apiRepository.findById(apiKey)
-                .orElseThrow(() -> new TenantNotFoundException("Tenant is not registered"));
+                .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenant = apiCredential.getTenant();
 

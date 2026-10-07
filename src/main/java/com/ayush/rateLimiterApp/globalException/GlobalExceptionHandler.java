@@ -27,11 +27,9 @@ public class GlobalExceptionHandler {
                 .body(ex.getMessage());
     }
 
-    @ExceptionHandler(
-            {           TenantNotFoundException.class,
+    @ExceptionHandler({ TenantNotFoundException.class,
                         InvalidApiKeyException.class,
-                        MissingRequestHeaderException.class}
-    )
+                        MissingRequestHeaderException.class})
     public ResponseEntity<ErrorResponse> handleUnauthorized(Exception ex){
       return build(HttpStatus.UNAUTHORIZED, "Invalid or missing API key");
     }
