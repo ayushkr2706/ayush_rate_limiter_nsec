@@ -3,6 +3,7 @@ package com.ayush.rateLimiterApp.tenantManagement.controller;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.service.TenantService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class TenantController {
     }
 
     @PostMapping
-    public ResponseEntity<RegistrationResponseDto> registerTenant(@RequestBody RegistrationRequestDto
+    public ResponseEntity<RegistrationResponseDto> registerTenant(@Valid @RequestBody RegistrationRequestDto
                                                                               registrationRequestDto){
         RegistrationResponseDto response = tenantService.registerTenant(registrationRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

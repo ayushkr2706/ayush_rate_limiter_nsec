@@ -8,44 +8,59 @@ import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
 import com.ayush.rateLimiterApp.tenantManagement.repository.TenantRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
 public class TenantService {
 
-    private TenantRepository tenantRepository;
+    private final TenantRepository tenantRepository;
 
-    private ApiRepository apiRepository;
+    private final ApiRepository apiRepository;
 
-    private PolicyRepository policyRepository;
+    private final PolicyRepository policyRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     public TenantService(TenantRepository tenantRepository,
                          ApiRepository apiRepository,
-                         PolicyRepository policyRepository){
+                         PolicyRepository policyRepository,
+                         PasswordEncoder passwordEncoder){
         this.tenantRepository = tenantRepository;
         this.apiRepository = apiRepository;
         this.policyRepository = policyRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto){
 
+        String email = registrationRequestDto.getCompanyEmail()
+                .trim().toLowerCase(java.util.Locale.ROOT);
+
         Optional <Tenants> fetchedTenantOptional = tenantRepository.
-                findByCompanyEmail(registrationRequestDto.getCompanyEmail());
+                findByCompanyEmail(email);
 
         if(fetchedTenantOptional.isPresent()){
             throw new DuplicateTenantException("Tenant with emailId "
-                      + registrationRequestDto.getCompanyEmail() + " already exists");
+                      + email + " already exists");
         }
 
-        Tenants tenant = mapToTenantsEntity(registrationRequestDto);
-        Tenants savedTenant = tenantRepository.save(tenant);
-        System.out.println("Tenant Registered");
+        Tenants tenant = mapToTenantsEntity(registrationRequestDto, email);
+        Tenants savedTenant;
+        try{
+            savedTenant = tenantRepository.saveAndFlush(tenant);
+        }
+        catch(DataIntegrityViolationException ex){
+            throw new DuplicateTenantException("Tenant with email id " + email + " already exists");
+        }
+
 
         ApiCredentials savedApiCredential = apiRepository.save(mapToApiCredentialEntity(savedTenant));
-        System.out.println("Api credentials registered");
         RegistrationResponseDto response =  mapToRegistrationResponseDto(tenant);
         response.setCreatedAt(LocalDateTime.now());
         response.setApiKey(savedApiCredential.getApiKey().toString());
@@ -66,12 +81,12 @@ public class TenantService {
         return response;
     }
 
-    private Tenants mapToTenantsEntity(RegistrationRequestDto registrationRequestDto) {
+    private Tenants mapToTenantsEntity(RegistrationRequestDto registrationRequestDto, String email) {
 
         Tenants tenant = new Tenants();
         tenant.setCompanyName(registrationRequestDto.getCompanyName());
-        tenant.setCompanyEmail(registrationRequestDto.getCompanyEmail());
-        tenant.setPassword(registrationRequestDto.getPassword());
+        tenant.setCompanyEmail(email);
+        tenant.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
         tenant.setCreatedAt(LocalDateTime.now());
         tenant.setStatus("active");
         return tenant;

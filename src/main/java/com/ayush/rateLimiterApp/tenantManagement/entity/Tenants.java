@@ -16,6 +16,7 @@ public class Tenants {
 
     @Column(unique = true)
     private String companyEmail;
+
     private String password;
     private LocalDateTime createdAt;
     private String status;
