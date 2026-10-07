@@ -44,6 +44,8 @@ public class TokenBucketRateLimiter {
 //        System.out.println("identity " + identity);
 //        System.out.println("redisKey " + redisKey);
 
+        System.out.println("capacity=" + capacity + " refillRate=" + refillRate);
+
         List result = redisTemplate.execute(
                 script,                                 //Lua script executed atomically
                 Collections.singletonList(redisKey),    //Identifies a particular user's bucket inside the redis

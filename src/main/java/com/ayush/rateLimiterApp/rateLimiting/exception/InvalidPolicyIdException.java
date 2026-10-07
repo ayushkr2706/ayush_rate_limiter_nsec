@@ -1,8 +1,8 @@
 package com.ayush.rateLimiterApp.rateLimiting.exception;
 
-public class PolicyNotFoundException extends RuntimeException{
+public class InvalidPolicyIdException extends RuntimeException{
 
-    public PolicyNotFoundException(String message){
+    public InvalidPolicyIdException(String message){
         super(message);
     }
 }

@@ -6,9 +6,7 @@ import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
-import com.ayush.rateLimiterApp.rateLimiting.exception.PolicyNotFoundException;
-import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotFoundException;
-import com.ayush.rateLimiterApp.rateLimiting.exception.TenantInactiveException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.*;
 import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import org.springframework.stereotype.Service;
@@ -34,9 +32,17 @@ public class RateLimiterService {
     public RateLimiterResponseDto rateLimit(RateLimiterRequestDto rateLimiterRequestDto,
                                             String authorization){
 
-        UUID apiKey = UUID.fromString(authorization);
+        UUID apiKey;
+
+        try{
+            apiKey = UUID.fromString(authorization.trim());
+        }
+        catch(IllegalArgumentException ex){
+            throw new InvalidApiKeyException();
+        }
+
         ApiCredentials fetchedApiCredentials = apiRepository.findById(apiKey)
-                .orElseThrow(() -> new TenantNotFoundException("Tenant is not registered"));
+                .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
 
@@ -45,7 +51,14 @@ public class RateLimiterService {
         }
 
         UUID tenantId = tenantTobeChecked.getTenantId();
-        UUID policyId = UUID.fromString(rateLimiterRequestDto.getPolicyId());
+        UUID policyId;
+        try{
+            policyId = UUID.fromString(rateLimiterRequestDto.getPolicyId().trim());
+        }
+        catch(IllegalArgumentException ex){
+            throw new InvalidPolicyIdException("Invalid policy id");
+        }
+
         Policies fetchedPolicy = policyRepository.findByPolicyIdAndTenant_TenantId(policyId, tenantId)
                 .orElseThrow(() -> new PolicyNotFoundException("Tenant with policy id " + policyId.toString() +
                         " does not exist"));
