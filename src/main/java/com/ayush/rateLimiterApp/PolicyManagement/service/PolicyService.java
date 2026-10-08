@@ -4,6 +4,7 @@ import com.ayush.rateLimiterApp.PolicyManagement.dto.PolicyRequestDto;
 import com.ayush.rateLimiterApp.PolicyManagement.dto.PolicyResponseDto;
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
+import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotFoundException;
 import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
@@ -28,9 +29,9 @@ public class PolicyService {
     public PolicyResponseDto createPolicy(PolicyRequestDto policyRequestDto,
                                           String authorization){
 
-        UUID apiKey = UUID.fromString(authorization);
+        String apiKey = authorization;
 
-        ApiCredentials apiCredential = apiRepository.findById(apiKey)
+        ApiCredentials apiCredential = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
                 .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenant = apiCredential.getTenant();

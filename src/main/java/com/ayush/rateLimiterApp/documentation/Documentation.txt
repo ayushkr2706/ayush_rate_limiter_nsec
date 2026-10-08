@@ -1,0 +1,13 @@
+Bugs that I solved :
+
+1. Encrypt the password to be stored in DB. Whenever a tenant registers to our backend, the tenant's information
+    gets stored in our DB such as tenant_id, company_email, company_name, password etc. So we cannot store the password
+    as it is. We need to Encrypt the password. For this, we use BCrypt. BCrypt is a password-hashing algorithm used to
+    securely store passwords in a database. We hash the password using Bcrypt and then store it in DB.
+
+2. Hash the api_key to be stored in DB. When a tenant registers, we send them the api_key once and then hash the api
+    key and store it in DB. For this we use SHA-256. This is because, passwords are short and guessable by humans.
+    So, we use a slow hash (BCrypt). An API key is 32 random bytes, and nobody can guess that, so a fast hash is
+    enough. BCrypt would add roughly 100 ms to every rate-limit call, which is far too slow. Now, whenever the tenant
+    sends a rate-limit request, we receive the api_key as Request header, hash it, and then search the DB using that
+    hashed key.

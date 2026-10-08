@@ -2,7 +2,7 @@ package com.ayush.rateLimiterApp.tenantManagement.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
-import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
+import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
@@ -11,9 +11,9 @@ import com.ayush.rateLimiterApp.tenantManagement.repository.TenantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -23,20 +23,17 @@ public class TenantService {
 
     private final ApiRepository apiRepository;
 
-    private final PolicyRepository policyRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public TenantService(TenantRepository tenantRepository,
                          ApiRepository apiRepository,
-                         PolicyRepository policyRepository,
                          PasswordEncoder passwordEncoder){
         this.tenantRepository = tenantRepository;
         this.apiRepository = apiRepository;
-        this.policyRepository = policyRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto){
 
         String email = registrationRequestDto.getCompanyEmail()
@@ -59,16 +56,19 @@ public class TenantService {
             throw new DuplicateTenantException("Tenant with email id " + email + " already exists");
         }
 
+        String plainApiKey = ApiKeyUtil.generate();
+        apiRepository.save(mapToApiCredentialEntity(savedTenant, plainApiKey));
 
-        ApiCredentials savedApiCredential = apiRepository.save(mapToApiCredentialEntity(savedTenant));
-        RegistrationResponseDto response =  mapToRegistrationResponseDto(tenant);
+        RegistrationResponseDto response =  mapToRegistrationResponseDto(savedTenant);
         response.setCreatedAt(LocalDateTime.now());
-        response.setApiKey(savedApiCredential.getApiKey().toString());
+        response.setApiKey(plainApiKey);
         return response;
     }
 
-    private ApiCredentials mapToApiCredentialEntity(Tenants tenant) {
+    private ApiCredentials mapToApiCredentialEntity(Tenants tenant, String plainApiKey) {
         ApiCredentials apiCredential = new ApiCredentials();
+        apiCredential.setKeyHash(ApiKeyUtil.hash(plainApiKey));
+        apiCredential.setKeyHint(plainApiKey.substring(0, 12));
         apiCredential.setTenant(tenant);
         apiCredential.setCreatedAt(LocalDateTime.now());
         return apiCredential;

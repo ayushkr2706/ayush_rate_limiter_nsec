@@ -2,6 +2,7 @@ package com.ayush.rateLimiterApp.rateLimiting.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
+import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
@@ -32,16 +33,16 @@ public class RateLimiterService {
     public RateLimiterResponseDto rateLimit(RateLimiterRequestDto rateLimiterRequestDto,
                                             String authorization){
 
-        UUID apiKey;
+        String apiKey;
 
         try{
-            apiKey = UUID.fromString(authorization.trim());
+            apiKey = authorization.trim();
         }
         catch(IllegalArgumentException ex){
             throw new InvalidApiKeyException();
         }
 
-        ApiCredentials fetchedApiCredentials = apiRepository.findById(apiKey)
+        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
                 .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();

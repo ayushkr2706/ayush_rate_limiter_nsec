@@ -2,7 +2,6 @@ package com.ayush.rateLimiterApp.apiCredentialManagement.entity;
 
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,18 +10,42 @@ public class ApiCredentials {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID apiKey;
+    private UUID id;
+
+    @Column(nullable = false, unique = true, length = 64)
+    private String keyHash;
+
+    @Column(nullable = false, length = 12)
+    private String keyHint;
+
     @ManyToOne
     @JoinColumn(name = "tenantId")
     private Tenants tenant;
+
     private LocalDateTime createdAt;
 
-    public UUID getApiKey() {
-        return apiKey;
+    public UUID getId() {
+        return id;
     }
 
-    public void setApiKey(UUID apiKey) {
-        this.apiKey = apiKey;
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getKeyHash() {
+        return keyHash;
+    }
+
+    public void setKeyHash(String keyHash) {
+        this.keyHash = keyHash;
+    }
+
+    public String getKeyHint() {
+        return keyHint;
+    }
+
+    public void setKeyHint(String keyHint) {
+        this.keyHint = keyHint;
     }
 
     public Tenants getTenant() {
