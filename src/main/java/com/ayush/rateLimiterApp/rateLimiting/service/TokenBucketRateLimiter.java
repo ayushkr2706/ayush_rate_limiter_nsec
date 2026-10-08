@@ -41,10 +41,6 @@ public class TokenBucketRateLimiter {
          * return the result returned by the Lua script, indicating whether
          *         the request is allowed
          */
-//        System.out.println("identity " + identity);
-//        System.out.println("redisKey " + redisKey);
-
-        System.out.println("capacity=" + capacity + " refillRate=" + refillRate);
 
         List result = redisTemplate.execute(
                 script,                                 //Lua script executed atomically
