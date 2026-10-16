@@ -36,11 +36,11 @@ public class TenantService {
     @Transactional
     public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto){
 
-        String email = registrationRequestDto.getCompanyEmail()
+        String email = registrationRequestDto.getEmail()
                 .trim().toLowerCase(java.util.Locale.ROOT);
 
         Optional <Tenants> fetchedTenantOptional = tenantRepository.
-                findByCompanyEmail(email);
+                findByEmail(email);
 
         if(fetchedTenantOptional.isPresent()){
             throw new DuplicateTenantException("Tenant with emailId "
@@ -85,7 +85,7 @@ public class TenantService {
 
         Tenants tenant = new Tenants();
         tenant.setCompanyName(registrationRequestDto.getCompanyName());
-        tenant.setCompanyEmail(email);
+        tenant.setEmail(email);
         tenant.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
         tenant.setCreatedAt(LocalDateTime.now());
         tenant.setStatus("active");

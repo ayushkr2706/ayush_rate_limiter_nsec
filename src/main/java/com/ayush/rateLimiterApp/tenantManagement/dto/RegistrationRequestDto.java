@@ -10,9 +10,15 @@ public class RegistrationRequestDto {
     @Size(max = 100, message = "company name is too long")
     private String companyName;
 
-    @NotBlank(message = "company email is required")
-    @Email(message = "company email must be a valid email")
-    private String companyEmail;
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name is too long")
+    private String firstName;
+    @Size(max = 50, message = "Last name is too long")
+    private String lastName;
+
+    @NotBlank(message = "email is required")
+    @Email(message = "email must be a valid email")
+    private String email;
 
     @NotBlank(message = "password is required")
     @Size(min = 8, max = 72, message = "password must be 8 to 72 characters")
@@ -26,12 +32,12 @@ public class RegistrationRequestDto {
         this.companyName = companyName;
     }
 
-    public String getCompanyEmail() {
-        return companyEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public void setCompanyEmail(String companyEmail) {
-        this.companyEmail = companyEmail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -40,5 +46,22 @@ public class RegistrationRequestDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }

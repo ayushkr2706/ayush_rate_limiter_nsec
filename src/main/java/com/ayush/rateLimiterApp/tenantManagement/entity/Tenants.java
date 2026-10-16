@@ -1,6 +1,5 @@
 package com.ayush.rateLimiterApp.tenantManagement.entity;
 
-import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,12 +11,8 @@ public class Tenants {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
     private UUID tenantId;
+    private UUID parentTenantId;
     private String companyName;
-
-    @Column(unique = true)
-    private String companyEmail;
-
-    private String password;
     private LocalDateTime createdAt;
     private String status;
 
@@ -53,19 +48,11 @@ public class Tenants {
         this.status = status;
     }
 
-    public String getCompanyEmail() {
-        return companyEmail;
+    public UUID getParentTenantId() {
+        return parentTenantId;
     }
 
-    public void setCompanyEmail(String companyEmail) {
-        this.companyEmail = companyEmail;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setParentTenantId(UUID parentTenantId) {
+        this.parentTenantId = parentTenantId;
     }
 }
