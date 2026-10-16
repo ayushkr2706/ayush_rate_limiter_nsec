@@ -6,8 +6,13 @@ import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
+import com.ayush.rateLimiterApp.tenantManagement.entity.UserMembership;
+import com.ayush.rateLimiterApp.tenantManagement.entity.Users;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
+import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateUserException;
 import com.ayush.rateLimiterApp.tenantManagement.repository.TenantRepository;
+import com.ayush.rateLimiterApp.tenantManagement.repository.UserMembershipRepository;
+import com.ayush.rateLimiterApp.tenantManagement.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,14 +28,23 @@ public class TenantService {
 
     private final ApiRepository apiRepository;
 
+    private final UserRepository userRepository;
+
+    private final UserMembershipRepository userMembershipRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     public TenantService(TenantRepository tenantRepository,
                          ApiRepository apiRepository,
-                         PasswordEncoder passwordEncoder){
+                         PasswordEncoder passwordEncoder,
+                         UserRepository userRepository,
+                         UserMembershipRepository userMembershipRepository){
+
         this.tenantRepository = tenantRepository;
         this.apiRepository = apiRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     @Transactional
@@ -39,22 +53,34 @@ public class TenantService {
         String email = registrationRequestDto.getEmail()
                 .trim().toLowerCase(java.util.Locale.ROOT);
 
-        Optional <Tenants> fetchedTenantOptional = tenantRepository.
+        Optional <Users> fetchedUserOptional = userRepository.
                 findByEmail(email);
 
-        if(fetchedTenantOptional.isPresent()){
-            throw new DuplicateTenantException("Tenant with emailId "
+        if(fetchedUserOptional.isPresent()){
+            throw new DuplicateUserException("User with emailId "
                       + email + " already exists");
         }
 
-        Tenants tenant = mapToTenantsEntity(registrationRequestDto, email);
+        Tenants tenant = mapToTenantsEntity(registrationRequestDto);
+        Users user = mapToUserEntity(registrationRequestDto, email);
         Tenants savedTenant;
         try{
             savedTenant = tenantRepository.saveAndFlush(tenant);
         }
         catch(DataIntegrityViolationException ex){
-            throw new DuplicateTenantException("Tenant with email id " + email + " already exists");
+            throw new DuplicateTenantException("Tenant already exists");
         }
+
+        Users savedUser;
+        try{
+            savedUser = userRepository.saveAndFlush(user);
+        }
+        catch (DataIntegrityViolationException ex){
+            throw new DuplicateUserException("User with email id " + email + " already exists");
+        }
+
+        UserMembership userMembership = mapToUserMembershipEntity(savedTenant, savedUser);
+        UserMembership savedUserMembership = userMembershipRepository.saveAndFlush(userMembership);
 
         String plainApiKey = ApiKeyUtil.generate();
         apiRepository.save(mapToApiCredentialEntity(savedTenant, plainApiKey));
@@ -63,6 +89,28 @@ public class TenantService {
         response.setCreatedAt(LocalDateTime.now());
         response.setApiKey(plainApiKey);
         return response;
+    }
+
+    private UserMembership mapToUserMembershipEntity(Tenants savedTenant, Users savedUser) {
+
+        UserMembership userMembership = new UserMembership();
+        userMembership.setUser(savedUser);
+        userMembership.setTenant(savedTenant);
+        userMembership.setRole("admin");
+        return userMembership;
+    }
+
+    private Users mapToUserEntity(RegistrationRequestDto registrationRequestDto, String email) {
+
+        Users user = new Users();
+
+        user.setFirstName(registrationRequestDto.getFirstName());
+        user.setLastName(registrationRequestDto.getLastName());
+        user.setEmail(registrationRequestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
+        user.setCreatedAt(LocalDateTime.now());
+        user.setStatus("active");
+        return user;
     }
 
     private ApiCredentials mapToApiCredentialEntity(Tenants tenant, String plainApiKey) {
@@ -81,12 +129,11 @@ public class TenantService {
         return response;
     }
 
-    private Tenants mapToTenantsEntity(RegistrationRequestDto registrationRequestDto, String email) {
+    private Tenants mapToTenantsEntity(RegistrationRequestDto registrationRequestDto) {
 
         Tenants tenant = new Tenants();
         tenant.setCompanyName(registrationRequestDto.getCompanyName());
-        tenant.setEmail(email);
-        tenant.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
+        tenant.setParentTenantId(null);
         tenant.setCreatedAt(LocalDateTime.now());
         tenant.setStatus("active");
         return tenant;

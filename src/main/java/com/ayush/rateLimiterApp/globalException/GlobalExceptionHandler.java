@@ -2,6 +2,7 @@ package com.ayush.rateLimiterApp.globalException;
 
 import com.ayush.rateLimiterApp.rateLimiting.exception.*;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
+import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateUserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -22,9 +23,13 @@ public class GlobalExceptionHandler {
     public record ErrorResponse(String error, String message){}
 
     @ExceptionHandler(DuplicateTenantException.class)
-    public ResponseEntity<String> handleDuplicateTenantException(DuplicateTenantException ex){
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleDuplicateUserException(DuplicateTenantException ex){
+       return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateUserException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUserException (DuplicateUserException ex){
+        return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler({ TenantNotFoundException.class,
