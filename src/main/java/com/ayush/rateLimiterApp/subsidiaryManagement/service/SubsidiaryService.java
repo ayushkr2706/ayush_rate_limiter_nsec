@@ -4,12 +4,12 @@ import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.rateLimiting.exception.InvalidApiKeyException;
-import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotFoundException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.TenantInactiveException;
+import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotAllowedException;
 import com.ayush.rateLimiterApp.subsidiaryManagement.dto.SubsidiaryRequestDto;
 import com.ayush.rateLimiterApp.subsidiaryManagement.dto.SubsidiaryResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import com.ayush.rateLimiterApp.tenantManagement.repository.TenantRepository;
-import com.ayush.rateLimiterApp.tenantManagement.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,32 +33,46 @@ public class SubsidiaryService {
     @Transactional
     public SubsidiaryResponseDto createSubsidiary(SubsidiaryRequestDto subsidiaryRequestDto,
                                                   String authorization){
-        String plainApiKey;
-        try{
-            plainApiKey = authorization.trim();
-        }
-        catch(IllegalArgumentException ex){
+
+        if(authorization == null || authorization.isBlank()){
             throw new InvalidApiKeyException();
         }
+        String plainApiKey = authorization.trim();
 
         String keyHash = ApiKeyUtil.hash(plainApiKey);
         ApiCredentials apiCredential = apiRepository.findByKeyHash(keyHash)
-                .orElseThrow(() -> new TenantNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
+
+        if(!"active".equalsIgnoreCase(apiCredential.getStatus())){
+            throw new InvalidApiKeyException();
+        }
 
         Tenants parentTenant = apiCredential.getTenant();
         String parentTenantId = String.valueOf(parentTenant.getTenantId());
 
-        Tenants subsidiaryToBeSaved = mapToTenantsEntity(subsidiaryRequestDto, parentTenantId);
-        Tenants savedSubsidiary = tenantRepository.saveAndFlush(subsidiaryToBeSaved);
+        if(parentTenant.getParentTenantId() != null){
+            throw new TenantNotAllowedException("Only root tenants can create " +
+                    "subsidiaries");
+        }
 
-        String subsidiaryApiKey = ApiKeyUtil.generate();
-        apiRepository.save(mapToApiCredentialsEntity(savedSubsidiary, subsidiaryApiKey));
+        if("active".equalsIgnoreCase(parentTenant.getStatus())){
 
-        SubsidiaryResponseDto response = mapToSubsidiaryResponseDto(savedSubsidiary);
-        response.setApiKey(subsidiaryApiKey);
-        response.setCreatedAt(LocalDateTime.now());
-        response.setParentCompanyName(parentTenant.getCompanyName());
-        return response;
+            Tenants subsidiaryToBeSaved = mapToTenantsEntity(subsidiaryRequestDto, parentTenantId);
+            Tenants savedSubsidiary = tenantRepository.saveAndFlush(subsidiaryToBeSaved);
+
+            String subsidiaryApiKey = ApiKeyUtil.generate();
+            apiRepository.save(mapToApiCredentialsEntity(savedSubsidiary, subsidiaryApiKey));
+
+            SubsidiaryResponseDto response = mapToSubsidiaryResponseDto(savedSubsidiary);
+            response.setApiKey(subsidiaryApiKey);
+            response.setCreatedAt(savedSubsidiary.getCreatedAt());
+            response.setParentCompanyName(parentTenant.getCompanyName());
+            return response;
+        }
+       else {
+           throw new TenantInactiveException("Parent tenant with tenant id "
+           + parentTenantId + " is inactive");
+        }
     }
 
     private Tenants mapToTenantsEntity(SubsidiaryRequestDto subsidiaryRequestDto,
@@ -78,6 +92,7 @@ public class SubsidiaryService {
         apiCredential.setKeyHash(ApiKeyUtil.hash(subsidiaryApiKey));
         apiCredential.setKeyHint(subsidiaryApiKey.substring(0, 12));
         apiCredential.setTenant(savedSubsidiary);
+        apiCredential.setStatus("active");
         apiCredential.setCreatedAt(LocalDateTime.now());
         return apiCredential;
     }

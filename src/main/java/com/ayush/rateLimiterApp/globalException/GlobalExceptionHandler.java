@@ -44,6 +44,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "This account is not active");
     }
 
+    @ExceptionHandler(TenantNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleTenantNotAllowedException(
+            TenantNotAllowedException ex){
+        return build(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(PolicyNotFoundException.class)
     public ResponseEntity<ErrorResponse> handlePolicyNotFoundException(PolicyNotFoundException ex){
         return build(HttpStatus.NOT_FOUND, ex.getMessage());

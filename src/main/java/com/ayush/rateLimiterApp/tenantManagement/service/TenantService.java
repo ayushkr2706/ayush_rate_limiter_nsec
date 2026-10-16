@@ -119,6 +119,7 @@ public class TenantService {
         apiCredential.setKeyHint(plainApiKey.substring(0, 12));
         apiCredential.setTenant(tenant);
         apiCredential.setCreatedAt(LocalDateTime.now());
+        apiCredential.setStatus("active");
         return apiCredential;
     }
 
