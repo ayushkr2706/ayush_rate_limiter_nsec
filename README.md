@@ -318,18 +318,18 @@ Load-tested with Apache JMeter on a single laptop, where the application, MySQL,
 | One user IP | 7,701 req/s | 11 ms | 16 ms | 0% |
 | Randomized user IPs | 7,590 req/s | 11 ms | 15 ms | 0% |
 
-These numbers are **before** caching the API key and policy lookups, and are meant as a baseline. Because everything ran on one machine, compare them with each other, not with production figures.
+These numbers are **before** caching the API key and policy lookups, and are meant as a baseline. 
+Because everything ran on one machine, compare them with each other, not with production figures.
 
 <!-- TODO: add the "after caching" results here once the Caffeine cache is measured. -->
 
----
-
+--- 
 ## Project structure
 
 ```
 src/main/java/com/ayush/rateLimiterApp
 ├── rateLimiting            # controller, service, token bucket limiter, DTOs
-├── tenantManagement        # tenant registration
+├── tenantManagement   # tenant registration
 ├── apiCredentialManagement # API key storage
 ├── globalException         # consistent error responses
 └── config                  # password encoder and other settings

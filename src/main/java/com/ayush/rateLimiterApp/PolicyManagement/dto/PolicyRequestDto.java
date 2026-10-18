@@ -2,6 +2,7 @@ package com.ayush.rateLimiterApp.PolicyManagement.dto;
 
 public class PolicyRequestDto {
 
+    @
     private int capacity;
     private double refillRate;
 
