@@ -106,7 +106,7 @@ public class TenantService {
 
         user.setFirstName(registrationRequestDto.getFirstName());
         user.setLastName(registrationRequestDto.getLastName());
-        user.setEmail(registrationRequestDto.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setStatus("active");

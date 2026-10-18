@@ -18,6 +18,7 @@ public class RegistrationRequestDto {
 
     @NotBlank(message = "email is required")
     @Email(message = "email must be a valid email")
+    @Size(max = 254, message = "email is too long")
     private String email;
 
     @NotBlank(message = "password is required")
