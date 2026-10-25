@@ -3,6 +3,7 @@ package com.ayush.rateLimiterApp.rateLimiting.service;
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
+import com.ayush.rateLimiterApp.rateLimiting.dto.ApiKeyInfo;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
 import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
@@ -16,18 +17,23 @@ import java.util.UUID;
 @Service
 public class RateLimiterService {
 
-    private TokenBucketRateLimiter tokenBucketRateLimiter;
+    private final TokenBucketRateLimiter tokenBucketRateLimiter;
 
-    private PolicyRepository policyRepository;
+    private final PolicyRepository policyRepository;
 
-    private ApiRepository apiRepository;
+    private final ApiRepository apiRepository;
+
+    private final LookupService lookupService;
 
     public RateLimiterService(TokenBucketRateLimiter tokenBucketRateLimiter,
                               ApiRepository apiRepository,
-                              PolicyRepository policyRepository){
+                              PolicyRepository policyRepository,
+                              LookupService lookupService){
+
         this.tokenBucketRateLimiter = tokenBucketRateLimiter;
         this.apiRepository = apiRepository;
         this.policyRepository = policyRepository;
+        this.lookupService = lookupService;
     }
 
     public RateLimiterResponseDto rateLimit(RateLimiterRequestDto rateLimiterRequestDto,
@@ -42,8 +48,18 @@ public class RateLimiterService {
             throw new InvalidApiKeyException();
         }
 
-        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
-                .orElseThrow(() -> new TenantNotFoundException());
+        ApiKeyInfo apiKeyInfo = lookupService.findApiKey(ApiKeyUtil.hash(apiKey));
+
+        if(apiKeyInfo == null){
+            throw new InvalidApiKeyException();
+        }
+
+        if(!apiKeyInfo.active()){
+            throw new TenantInactiveException("API key or account is not active");
+        }
+
+//        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
+//                .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
 
