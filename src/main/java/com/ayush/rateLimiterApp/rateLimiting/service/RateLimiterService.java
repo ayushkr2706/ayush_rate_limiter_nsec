@@ -23,12 +23,12 @@ public class RateLimiterService {
 
     private final ApiRepository apiRepository;
 
-    private final LookupService lookupService;
+    private final LookUpService lookupService;
 
     public RateLimiterService(TokenBucketRateLimiter tokenBucketRateLimiter,
                               ApiRepository apiRepository,
                               PolicyRepository policyRepository,
-                              LookupService lookupService){
+                              LookUpService lookupService){
 
         this.tokenBucketRateLimiter = tokenBucketRateLimiter;
         this.apiRepository = apiRepository;
@@ -58,8 +58,8 @@ public class RateLimiterService {
             throw new TenantInactiveException("API key or account is not active");
         }
 
-//        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
-//                .orElseThrow(() -> new TenantNotFoundException());
+        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
+                .orElseThrow(() -> new TenantNotFoundException());
 
         Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
 

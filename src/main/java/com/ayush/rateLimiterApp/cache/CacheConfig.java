@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
+import java.util.List;
 
 @Configuration
 public class CacheConfig {
@@ -19,12 +20,25 @@ public class CacheConfig {
                                                                         //implementation class of CacheManager. This
                                                                         //is also provided by Spring cache module.
 
-        Caffeine<Object, Object> caffeineBuilder = Caffeine.newBuilder();
+        cacheManager.setCacheNames(List.of("apiCache", "policyCache"));
 
-        caffeineBuilder.expireAfterWrite(Duration.ofSeconds(120))
+        Caffeine<Object, Object> apiCacheBuilder = Caffeine.newBuilder();   //apiCache
+
+        Caffeine<Object, Object> policyCacheBuilder = Caffeine.newBuilder();  //policyCache
+
+        apiCacheBuilder.expireAfterWrite(Duration.ofSeconds(30))
                 .maximumSize(10000);
 
-        cacheManager.setCaffeine(caffeineBuilder);
+        policyCacheBuilder.expireAfterWrite(Duration.ofSeconds(300))
+                .maximumSize(2000);
+
+        cacheManager.registerCustomCache(
+                "apiCache", apiCacheBuilder.build()
+        );
+
+        cacheManager.registerCustomCache(
+                "policyCache", policyCacheBuilder.build()
+        );
         return cacheManager;
 
     }
