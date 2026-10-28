@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidPolicyIdException.class)
     public ResponseEntity<ErrorResponse> handleInvalidPolicyIdException(InvalidPolicyIdException ex){
-        return build(HttpStatus.BAD_REQUEST, "Invalid policy id");
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

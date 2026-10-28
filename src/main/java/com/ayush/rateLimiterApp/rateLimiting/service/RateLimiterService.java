@@ -3,10 +3,7 @@ package com.ayush.rateLimiterApp.rateLimiting.service;
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
-import com.ayush.rateLimiterApp.rateLimiting.dto.ApiKeyInfo;
-import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimitResult;
-import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterRequestDto;
-import com.ayush.rateLimiterApp.rateLimiting.dto.RateLimiterResponseDto;
+import com.ayush.rateLimiterApp.rateLimiting.dto.*;
 import com.ayush.rateLimiterApp.rateLimiting.entity.Policies;
 import com.ayush.rateLimiterApp.rateLimiting.exception.*;
 import com.ayush.rateLimiterApp.rateLimiting.repository.PolicyRepository;
@@ -55,19 +52,19 @@ public class RateLimiterService {
         }
 
         if(!apiKeyInfo.active()){
-            throw new TenantInactiveException("API key or account is not active");
+            throw new TenantInactiveException("API key or Tenant is not active");
         }
 
-        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
-                .orElseThrow(() -> new TenantNotFoundException());
+//        ApiCredentials fetchedApiCredentials = apiRepository.findByKeyHash(ApiKeyUtil.hash(apiKey))
+//                .orElseThrow(() -> new TenantNotFoundException());
 
-        Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
+       // Tenants tenantTobeChecked = fetchedApiCredentials.getTenant();
 
-        if(!tenantTobeChecked.getStatus().equals("active")){
-            throw new TenantInactiveException("Tenant is not active");
-        }
+//        if(!tenantTobeChecked.getStatus().equals("active")){
+//            throw new TenantInactiveException("Tenant is not active");
+//        }
 
-        UUID tenantId = tenantTobeChecked.getTenantId();
+        UUID tenantId = apiKeyInfo.tenantId();
         UUID policyId;
         try{
             policyId = UUID.fromString(rateLimiterRequestDto.getPolicyId().trim());
@@ -76,13 +73,19 @@ public class RateLimiterService {
             throw new InvalidPolicyIdException("Invalid policy id");
         }
 
-        Policies fetchedPolicy = policyRepository.findByPolicyIdAndTenant_TenantId(policyId, tenantId)
-                .orElseThrow(() -> new PolicyNotFoundException("Tenant with policy id " + policyId.toString() +
-                        " does not exist"));
+        PolicyInfo policyInfo = lookupService.findPolicy(tenantId, policyId);
+
+        if(policyInfo == null){
+            throw new InvalidPolicyIdException("Tenant with policy id " + policyId + " does not exist");
+        }
+
+//        Policies fetchedPolicy = policyRepository.findByPolicyIdAndTenant_TenantId(policyId, tenantId)
+//                .orElseThrow(() -> new PolicyNotFoundException("Tenant with policy id " + policyId.toString() +
+//                        " does not exist"));
 
         String userIp = rateLimiterRequestDto.getUserIp();
-        int capacity = fetchedPolicy.getCapacity();
-        double refillRate = fetchedPolicy.getRefillRate();
+        int capacity = policyInfo.capacity();
+        double refillRate = policyInfo.refillRate();
 
         String identity = tenantId.toString() + ":" + policyId.toString() + ":" + userIp;
 

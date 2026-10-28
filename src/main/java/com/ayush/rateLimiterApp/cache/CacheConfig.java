@@ -12,26 +12,33 @@ import java.util.List;
 @Configuration
 public class CacheConfig {
 
+    //CacheManager is an interface provided by Spring cache module
+    //to make our application communicate with the caffeine cache.
     @Bean
-    public CacheManager createCacheManager(){       //CacheManager is an interface provided by Spring cache module
-                                                    //to make our application communicate with the caffeine cache.
+    public CacheManager createCacheManager(){
 
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(); //CaffeineCacheManager class is an
-                                                                        //implementation class of CacheManager. This
-                                                                        //is also provided by Spring cache module.
+        //CaffeineCacheManager class is an implementation class of CacheManager.
+        //This is also provided by Spring Cache module.
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
+        //defining the names of the caches that our CacheManager will manage.
         cacheManager.setCacheNames(List.of("apiCache", "policyCache"));
 
-        Caffeine<Object, Object> apiCacheBuilder = Caffeine.newBuilder();   //apiCache
+        //creating builders for configuring a cache
+        Caffeine<Object, Object> apiCacheBuilder = Caffeine.newBuilder().recordStats();   //apiCache
 
-        Caffeine<Object, Object> policyCacheBuilder = Caffeine.newBuilder();  //policyCache
+        Caffeine<Object, Object> policyCacheBuilder = Caffeine.newBuilder().recordStats();  //policyCache
 
-        apiCacheBuilder.expireAfterWrite(Duration.ofSeconds(30))
+        //setting the properties of apiCacheBuilder
+        apiCacheBuilder.expireAfterWrite(Duration.ofSeconds(60))
                 .maximumSize(10000);
 
+        //setting the configurations of policyCacheBuilder
         policyCacheBuilder.expireAfterWrite(Duration.ofSeconds(300))
                 .maximumSize(2000);
 
+
+        //creating the actual Caffeine Cache and registering it with CacheManager
         cacheManager.registerCustomCache(
                 "apiCache", apiCacheBuilder.build()
         );
@@ -39,6 +46,7 @@ public class CacheConfig {
         cacheManager.registerCustomCache(
                 "policyCache", policyCacheBuilder.build()
         );
+
         return cacheManager;
 
     }
