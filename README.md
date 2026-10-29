@@ -1,6 +1,6 @@
 # Rate Limiter as a Service
 
-A multi-tenant rate-limiting service built with **Java 21, Spring Boot, Redis and MySQL**, plus a small **Java client library** that applications use to ask the service "is this request allowed?".
+A multi-tenant rate-limiting service built with **Java 21, Spring Boot, Redis, MySQL and Caffeine**, plus a small **Java client library** that applications use to ask the service "is this request allowed?".
 
 Tenants register once, receive an API key, and define their own limits (policies). Their applications then call the service for every incoming request and either let it through or answer with **HTTP 429 Too Many Requests**.
 
@@ -28,6 +28,7 @@ Tenants register once, receive an API key, and define their own limits (policies
 - **Token bucket algorithm** with a configurable capacity and refill rate per policy.
 - **Atomic checks in Redis** using a Lua script, so concurrent requests can never read the same token.
 - **Multi-tenant**: every tenant has its own API key and its own policies. Buckets are keyed by `tenantId:policyId:userIp`, so tenants can never share or affect each other's limits.
+- **Caffeine caching** of API key and policy lookups, so the hot path rarely touches MySQL.
 - **Helpful responses**: every answer includes whether the request is allowed, the remaining tokens, and how many seconds to wait (`retryAfter`).
 - **Reusable Java client library** with configurable timeouts and a fail-open / fail-closed option, so a rate limiter problem never takes down the tenant's application.
 - **Secure by default**: BCrypt-hashed passwords, hashed API keys, input validation, and a consistent JSON error format.
@@ -42,7 +43,8 @@ flowchart LR
     U[End user] --> T[Tenant application]
     T -->|uses| L[Rate limiter client library]
     L -->|POST /api/rate-limit<br/>API key + policyId + userIp| S[Rate limiter service<br/>Spring Boot]
-    S -->|tenant and policy lookup| M[(MySQL)]
+    S -->|tenant and policy lookup| C[(Caffeine cache)]
+    C -->|cache miss| M[(MySQL)]
     S -->|atomic Lua script| R[(Redis<br/>token buckets)]
     S -->|allowed, retryAfter, remainingTokens| L
     L -->|allowed or blocked| T
@@ -51,9 +53,10 @@ flowchart LR
 
 1. A user calls the tenant's application.
 2. The tenant's application asks the rate limiter (through the client library) whether this user may continue.
-3. The service identifies the tenant from the API key, loads the policy, and runs the token bucket script in Redis.
-4. The service answers with `allowed`, `remainingTokens` and `retryAfter`.
-5. The tenant lets the request through, or returns **HTTP 429**.
+3. The service identifies the tenant from the API key and loads the policy. Both lookups are served from the Caffeine cache and only go to MySQL on a cache miss.
+4. The service runs the token bucket script in Redis.
+5. The service answers with `allowed`, `remainingTokens` and `retryAfter`.
+6. The tenant lets the request through, or returns **HTTP 429**.
 
 ### The token bucket in one paragraph
 
@@ -69,6 +72,7 @@ Each user has a bucket that holds up to `capacity` tokens and starts full. Each 
 | Framework | Spring Boot 4 (Spring Web MVC, Spring Data JPA, Spring Data Redis) |
 | Rate limit state | Redis, with a Lua script |
 | Tenant and policy data | MySQL 8 |
+| Caching | Caffeine (in-process cache for API key and policy lookups) |
 | Client library | Java `HttpClient`, Jackson |
 | Password hashing | BCrypt (`spring-security-crypto`) |
 | Load testing | Apache JMeter |
@@ -288,6 +292,9 @@ The script asks Redis for the current time (`TIME`) instead of using the applica
 **Why throw away leftover time when the bucket is full?**
 An early version carried unused refill time forward, which let extra requests through after an idle period. When the bucket is full the script now resets the refill time, so idle time can never be "saved up".
 
+**Why cache API key and policy lookups with Caffeine?**
+Every rate-limit check needs the tenant (from the API key) and the policy, and both rarely change. Looking them up in MySQL on every request adds work to the hottest path of the service. Caffeine keeps them in memory inside the application, so repeated checks skip the database round trip. The tradeoff is that cached data can be briefly stale: a changed policy or a deactivated tenant is only picked up once the cached entry expires or is evicted. Bucket state itself is never cached this way. It always lives in Redis, so the token counts stay accurate.
+
 **Why fail-open by default in the library?**
 A rate limiter should protect a tenant's system, not become the reason it goes down. If the service is unreachable, the default is to allow the request. Tenants who prefer to block can switch to fail-closed.
 
@@ -309,21 +316,32 @@ A rate-limit check sits in front of every request, so waiting a long time for it
 
 ## Performance
 
-Load-tested with Apache JMeter on a single laptop, where the application, MySQL, Redis and JMeter all ran on the same machine.
+Load-tested with Apache JMeter on a single laptop, where the application, MySQL, Redis and JMeter all ran on the same machine. Each workload was run with Caffeine caching **enabled** and **disabled** (API key and policy lookups), and the figures below are averages across runs.
 
-**Setup:** 50 concurrent users, 5 second ramp-up, 30 seconds, warm run.
+**Setup:** 50 concurrent users, 5 second ramp-up, 30 seconds.
 
-| Scenario | Throughput | p95 | p99 | Errors |
+| Workload | Caching | Throughput (req/s) | p95 | p99 |
 |---|---|---|---|---|
-| One user IP | 7,701 req/s | 11 ms | 16 ms | 0% |
-| Randomized user IPs | 7,590 req/s | 11 ms | 15 ms | 0% |
+| Random keys | Enabled | **21,508.8** | **3.67 ms** | **3.67 ms** |
+| Random keys | Disabled | 19,349.5 | 4.00 ms | 8.00 ms |
+| Single key | Enabled | **16,757.6** | 4.00 ms | **4.33 ms** |
+| Single key | Disabled | 14,904.1 | 4.00 ms | 5.00 ms |
 
-These numbers are **before** caching the API key and policy lookups, and are meant as a baseline. 
-Because everything ran on one machine, compare them with each other, not with production figures.
+### What caching changed
 
-<!-- TODO: add the "after caching" results here once the Caffeine cache is measured. -->
+| Workload | Throughput | p95 | p99 |
+|---|---|---|---|
+| Random keys | +11.2% | 4.00 → 3.67 ms | 8.00 → 3.67 ms (-54%) |
+| Single key | +12.4% | unchanged (4.00 ms) | 5.00 → 4.33 ms (-13%) |
 
---- 
+- Caching raised throughput by roughly 11-12% in both workloads.
+- The biggest win is tail latency: with random keys, p99 more than halved, since fewer requests wait on MySQL.
+- Median-ish latency (p95) barely moves because Redis and the network hop dominate the cost of a request once the database is out of the way.
+
+Because everything ran on one machine, compare these numbers with each other, not with production figures.
+
+---
+
 ## Project structure
 
 ```
@@ -332,7 +350,7 @@ src/main/java/com/ayush/rateLimiterApp
 ├── tenantManagement   # tenant registration
 ├── apiCredentialManagement # API key storage
 ├── globalException         # consistent error responses
-└── config                  # password encoder and other settings
+└── config                  # password encoder, cache and other settings
 
 src/main/resources
 ├── scripts/tokenBucket.lua # the atomic token bucket script
@@ -350,7 +368,7 @@ src/main/resources
 - [x] Fast failure when Redis is down
 - [x] Java client library with fail-open and configurable timeouts
 - [x] Baseline load test with JMeter
-- [ ] Cache API key and policy lookups, then re-measure
+- [x] Cache API key and policy lookups with Caffeine, then re-measure
 - [ ] Structured logging, health checks and metrics
 - [ ] Automated tests (Lua script, library and API)
 - [ ] Docker and Docker Compose setup
