@@ -1,7 +1,6 @@
 package com.ayush.rateLimiterApp.tenantManagement.dto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class RegistrationResponseDto {
 

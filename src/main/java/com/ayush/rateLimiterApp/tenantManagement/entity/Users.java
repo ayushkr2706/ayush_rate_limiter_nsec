@@ -20,6 +20,7 @@ public class Users {
     private String password;
 
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String status;
 
     public UUID getUserId() {
@@ -76,5 +77,13 @@ public class Users {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

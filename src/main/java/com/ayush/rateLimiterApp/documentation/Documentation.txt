@@ -11,3 +11,8 @@ Bugs that I solved :
     enough. BCrypt would add roughly 100 ms to every rate-limit call, which is far too slow. Now, whenever the tenant
     sends a rate-limit request, we receive the api_key as Request header, hash it, and then search the DB using that
     hashed key.
+
+---*---*---*---*---*---*---
+
+* When a tenant will be registered by anyone, then that person will only become the OWNER of the tenant.
+  Then, that owner can further invite other people to become ADMIN, DEVELOPER etc.

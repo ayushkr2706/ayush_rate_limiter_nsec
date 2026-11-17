@@ -14,6 +14,7 @@ public class Tenants {
     private UUID parentTenantId;
     private String companyName;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String status;
 
     public UUID getTenantId() {
@@ -54,5 +55,13 @@ public class Tenants {
 
     public void setParentTenantId(UUID parentTenantId) {
         this.parentTenantId = parentTenantId;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
