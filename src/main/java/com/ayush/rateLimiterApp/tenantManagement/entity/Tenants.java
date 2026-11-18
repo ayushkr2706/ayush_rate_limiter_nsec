@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.tenantManagement.entity;
 
+import com.ayush.rateLimiterApp.tenantManagement.enums.TenantStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,10 +13,16 @@ public class Tenants {
     @Id
     private UUID tenantId;
     private UUID parentTenantId;
+
+    @Column(nullable = false)
     private String companyName;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TenantStatus status;
 
     public UUID getTenantId() {
         return tenantId;
@@ -41,11 +48,11 @@ public class Tenants {
         this.createdAt = createdAt;
     }
 
-    public String getStatus() {
+    public TenantStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(TenantStatus status) {
         this.status = status;
     }
 

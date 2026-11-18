@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.rateLimiting.entity;
 
+import com.ayush.rateLimiterApp.PolicyManagement.enums.PolicyStatus;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import jakarta.persistence.*;
 
@@ -15,9 +16,17 @@ public class Policies {
     @ManyToOne
     @JoinColumn(name = "tenantId")
     private Tenants tenant;
+
+    @Column(nullable = false)
     private int capacity;
+
+    @Column(nullable = false)
     private double refillRate;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PolicyStatus status;
+
     private LocalDateTime createdAt;
     private LocalDateTime updated_At;
 

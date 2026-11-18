@@ -1,6 +1,6 @@
 package com.ayush.rateLimiterApp.invitationManagement.enums;
 
-public enum Status {
+public enum InvitationStatus {
     PENDING,
     ACCEPTED,
     REVOKED,

@@ -3,6 +3,7 @@ package com.ayush.rateLimiterApp.tenantManagement.service;
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
+import com.ayush.rateLimiterApp.invitationManagement.enums.Role;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TenantService {
@@ -96,7 +98,7 @@ public class TenantService {
         UserMembership userMembership = new UserMembership();
         userMembership.setUser(savedUser);
         userMembership.setTenant(savedTenant);
-        userMembership.setRole("admin");
+        userMembership.setRole(Role.OWNER);
         return userMembership;
     }
 
@@ -136,8 +138,13 @@ public class TenantService {
         tenant.setCompanyName(registrationRequestDto.getCompanyName());
         tenant.setParentTenantId(null);
         tenant.setCreatedAt(LocalDateTime.now());
+        tenant.setUpdatedAt(LocalDateTime.now());
         tenant.setStatus("active");
         return tenant;
+    }
+
+    public boolean deleteTenant(UUID tenantId){
+
     }
 
 }

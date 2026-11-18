@@ -82,6 +82,7 @@ public class SubsidiaryService {
         tenant.setParentTenantId(UUID.fromString(parentTenantId));
         tenant.setCompanyName(subsidiaryRequestDto.getCompanyName());
         tenant.setCreatedAt(LocalDateTime.now());
+        tenant.setUpdatedAt(LocalDateTime.now());
         tenant.setStatus("active");
         return tenant;
     }
@@ -94,6 +95,7 @@ public class SubsidiaryService {
         apiCredential.setTenant(savedSubsidiary);
         apiCredential.setStatus("active");
         apiCredential.setCreatedAt(LocalDateTime.now());
+        apiCredential.setUpdatedAt(LocalDateTime.now());
         return apiCredential;
     }
 

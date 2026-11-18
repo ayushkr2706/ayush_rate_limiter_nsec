@@ -1,7 +1,7 @@
 package com.ayush.rateLimiterApp.invitationManagement.entity;
 
 import com.ayush.rateLimiterApp.invitationManagement.enums.Role;
-import com.ayush.rateLimiterApp.invitationManagement.enums.Status;
+import com.ayush.rateLimiterApp.invitationManagement.enums.InvitationStatus;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Users;
 import jakarta.persistence.*;
@@ -26,7 +26,7 @@ public class Invitation {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)    //The status in the database will be of string type.
-    private Status status = Status.PENDING;     //by default the status is PENDING.
+    private InvitationStatus status = InvitationStatus.PENDING;     //by default the status is PENDING.
 
     @ManyToOne(fetch = FetchType.LAZY)  //One invitation cannot belong to more than one Tenant.
     @JoinColumn(name = "tenant_id", nullable = false)     //and one tenant can have multiple invitations.
@@ -65,11 +65,11 @@ public class Invitation {
         this.role = role;
     }
 
-    public Status getStatus() {
+    public InvitationStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(InvitationStatus status) {
         this.status = status;
     }
 

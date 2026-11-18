@@ -1,5 +1,7 @@
 package com.ayush.rateLimiterApp.tenantManagement.entity;
 
+import com.ayush.rateLimiterApp.invitationManagement.enums.Role;
+import com.ayush.rateLimiterApp.tenantManagement.enums.MembershipStatus;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -27,7 +29,13 @@ public class UserMembership {
     @JoinColumn(name = "tenantId", nullable = false)
     private Tenants tenant;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MembershipStatus status;
 
     public UUID getMembershipId() {
         return membershipId;
@@ -53,11 +61,19 @@ public class UserMembership {
         this.tenant = tenant;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
+    }
+
+    public MembershipStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(MembershipStatus status) {
+        this.status = status;
     }
 }

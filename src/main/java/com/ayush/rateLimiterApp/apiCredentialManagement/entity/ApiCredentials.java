@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.apiCredentialManagement.entity;
 
+import com.ayush.rateLimiterApp.apiCredentialManagement.enums.ApiCredentialStatus;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -24,8 +25,11 @@ public class ApiCredentials {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ApiCredentialStatus status;
 
     public UUID getId() {
         return id;
@@ -67,11 +71,19 @@ public class ApiCredentials {
         this.createdAt = createdAt;
     }
 
-    public String getStatus() {
+    public ApiCredentialStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ApiCredentialStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
