@@ -1,5 +1,6 @@
 package com.ayush.rateLimiterApp.tenantManagement.entity;
 
+import com.ayush.rateLimiterApp.tenantManagement.enums.UserStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -17,11 +18,14 @@ public class Users {
 
     @Column(unique = true)
     private String email;
-    private String password;
+    private String passwordHash;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
 
     public UUID getUserId() {
         return userId;
@@ -55,12 +59,12 @@ public class Users {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -71,11 +75,11 @@ public class Users {
         this.createdAt = createdAt;
     }
 
-    public String getStatus() {
+    public UserStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 

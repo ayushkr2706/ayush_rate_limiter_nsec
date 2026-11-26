@@ -12,7 +12,6 @@ import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class PolicyService {
@@ -50,7 +49,7 @@ public class PolicyService {
         policy.setCapacity(policyRequestDto.getCapacity());
         policy.setStatus("Active");
         policy.setCreatedAt(LocalDateTime.now());
-        policy.setUpdated_At(LocalDateTime.now());
+        policy.setUpdatedAt(LocalDateTime.now());
         return policy;
     }
 

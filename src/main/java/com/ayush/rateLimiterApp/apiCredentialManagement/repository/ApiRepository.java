@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface ApiRepository extends JpaRepository<ApiCredentials, UUID> {
 
     Optional<ApiCredentials> findByKeyHash(String keyHash);
+
+
 }

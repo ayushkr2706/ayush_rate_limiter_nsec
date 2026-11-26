@@ -1,14 +1,18 @@
 package com.ayush.rateLimiterApp.tenantManagement.service;
 
 import com.ayush.rateLimiterApp.apiCredentialManagement.entity.ApiCredentials;
+import com.ayush.rateLimiterApp.apiCredentialManagement.enums.ApiCredentialStatus;
+import com.ayush.rateLimiterApp.apiCredentialManagement.exception.ApiKeyNotFoundException;
 import com.ayush.rateLimiterApp.apiCredentialManagement.repository.ApiRepository;
 import com.ayush.rateLimiterApp.apiCredentialManagement.utility.ApiKeyUtil;
 import com.ayush.rateLimiterApp.invitationManagement.enums.Role;
+import com.ayush.rateLimiterApp.rateLimiting.exception.TenantNotFoundException;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationRequestDto;
 import com.ayush.rateLimiterApp.tenantManagement.dto.RegistrationResponseDto;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Tenants;
 import com.ayush.rateLimiterApp.tenantManagement.entity.UserMembership;
 import com.ayush.rateLimiterApp.tenantManagement.entity.Users;
+import com.ayush.rateLimiterApp.tenantManagement.enums.TenantStatus;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateTenantException;
 import com.ayush.rateLimiterApp.tenantManagement.exception.DuplicateUserException;
 import com.ayush.rateLimiterApp.tenantManagement.repository.TenantRepository;
@@ -40,7 +44,7 @@ public class TenantService {
                          ApiRepository apiRepository,
                          PasswordEncoder passwordEncoder,
                          UserRepository userRepository,
-                         UserMembershipRepository userMembershipRepository){
+                         UserMembershipRepository userMembershipRepository) {
 
         this.tenantRepository = tenantRepository;
         this.apiRepository = apiRepository;
@@ -50,34 +54,32 @@ public class TenantService {
     }
 
     @Transactional
-    public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto){
+    public RegistrationResponseDto registerTenant(RegistrationRequestDto registrationRequestDto) {
 
         String email = registrationRequestDto.getEmail()
                 .trim().toLowerCase(java.util.Locale.ROOT);
 
-        Optional <Users> fetchedUserOptional = userRepository.
+        Optional<Users> fetchedUserOptional = userRepository.
                 findByEmail(email);
 
-        if(fetchedUserOptional.isPresent()){
+        if (fetchedUserOptional.isPresent()) {
             throw new DuplicateUserException("User with emailId "
-                      + email + " already exists");
+                    + email + " already exists");
         }
 
         Tenants tenant = mapToTenantsEntity(registrationRequestDto);
         Users user = mapToUserEntity(registrationRequestDto, email);
         Tenants savedTenant;
-        try{
+        try {
             savedTenant = tenantRepository.saveAndFlush(tenant);
-        }
-        catch(DataIntegrityViolationException ex){
+        } catch (DataIntegrityViolationException ex) {
             throw new DuplicateTenantException("Tenant already exists");
         }
 
         Users savedUser;
-        try{
+        try {
             savedUser = userRepository.saveAndFlush(user);
-        }
-        catch (DataIntegrityViolationException ex){
+        } catch (DataIntegrityViolationException ex) {
             throw new DuplicateUserException("User with email id " + email + " already exists");
         }
 
@@ -87,7 +89,7 @@ public class TenantService {
         String plainApiKey = ApiKeyUtil.generate();
         apiRepository.save(mapToApiCredentialEntity(savedTenant, plainApiKey));
 
-        RegistrationResponseDto response =  mapToRegistrationResponseDto(savedTenant);
+        RegistrationResponseDto response = mapToRegistrationResponseDto(savedTenant);
         response.setCreatedAt(LocalDateTime.now());
         response.setApiKey(plainApiKey);
         return response;
@@ -109,7 +111,7 @@ public class TenantService {
         user.setFirstName(registrationRequestDto.getFirstName());
         user.setLastName(registrationRequestDto.getLastName());
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(registrationRequestDto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setStatus("active");
         return user;
@@ -121,7 +123,7 @@ public class TenantService {
         apiCredential.setKeyHint(plainApiKey.substring(0, 12));
         apiCredential.setTenant(tenant);
         apiCredential.setCreatedAt(LocalDateTime.now());
-        apiCredential.setStatus("active");
+        apiCredential.setStatus(ApiCredentialStatus.ACTIVE);
         return apiCredential;
     }
 
@@ -139,12 +141,17 @@ public class TenantService {
         tenant.setParentTenantId(null);
         tenant.setCreatedAt(LocalDateTime.now());
         tenant.setUpdatedAt(LocalDateTime.now());
-        tenant.setStatus("active");
+        tenant.setStatus(TenantStatus.ACTIVE);
         return tenant;
     }
 
-    public boolean deleteTenant(UUID tenantId){
+    public boolean softDeleteTenant(UUID tenantId) {
+
+        Tenants tenantToBeSoftDeleted = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new TenantNotFoundException());
+        return true;
 
     }
+
 
 }

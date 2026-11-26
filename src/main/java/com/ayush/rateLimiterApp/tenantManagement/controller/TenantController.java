@@ -16,7 +16,7 @@ public class TenantController {
 
     //The Tenant Controller is responsible only for the registration of the tenant
     //along with the admin.
-    private TenantService tenantService;
+    private final TenantService tenantService;
 
     public TenantController(TenantService tenantService){
         this.tenantService = tenantService;
@@ -29,9 +29,10 @@ public class TenantController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteTenant(@PathVariable UUID tenantId){
-        boolean isDeleted = tenantService.deleteTenant(tenantId);
+    @PatchMapping
+    public ResponseEntity<Void> softDeleteTenant(@PathVariable UUID tenantId){
+        boolean isDeleted = tenantService.softDeleteTenant(tenantId);
+        return null;
     }
 
 }

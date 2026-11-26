@@ -1,11 +1,13 @@
 package com.ayush.rateLimiterApp.tenantManagement.dto;
 
+import com.ayush.rateLimiterApp.tenantManagement.enums.TenantStatus;
+
 import java.time.LocalDateTime;
 
 public class RegistrationResponseDto {
 
     private String apiKey;
-    private String status;
+    private TenantStatus status;
     private LocalDateTime createdAt;
 
 
@@ -17,11 +19,11 @@ public class RegistrationResponseDto {
         this.apiKey = apiKey;
     }
 
-    public String getStatus() {
+    public TenantStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(TenantStatus status) {
         this.status = status;
     }
 

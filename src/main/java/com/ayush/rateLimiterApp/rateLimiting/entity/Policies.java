@@ -14,8 +14,11 @@ public class Policies {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID policyId;
     @ManyToOne
-    @JoinColumn(name = "tenantId")
+    @JoinColumn(name = "tenantId", nullable = false)
     private Tenants tenant;
+
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
     private int capacity;
@@ -28,7 +31,7 @@ public class Policies {
     private PolicyStatus status;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updated_At;
+    private LocalDateTime updatedAt;
 
     public UUID getId() {
         return policyId;
@@ -62,11 +65,11 @@ public class Policies {
         this.refillRate = refillRate;
     }
 
-    public String getStatus() {
+    public PolicyStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(PolicyStatus status) {
         this.status = status;
     }
 
@@ -78,11 +81,11 @@ public class Policies {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdated_At() {
-        return updated_At;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_At(LocalDateTime updated_At) {
-        this.updated_At = updated_At;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
